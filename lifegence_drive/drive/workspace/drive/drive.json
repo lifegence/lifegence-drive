@@ -1,0 +1,144 @@
+{
+ "charts": [],
+ "content": null,
+ "creation": "2026-03-08 00:00:00.000000",
+ "custom_blocks": [],
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "folder-normal",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Drive",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Settings",
+   "link_count": 0,
+   "link_to": "Drive Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive File",
+   "link_count": 0,
+   "link_to": "Drive File",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Folder",
+   "link_count": 0,
+   "link_to": "Drive Folder",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Share",
+   "link_count": 0,
+   "link_to": "Drive Share",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Favorite",
+   "link_count": 0,
+   "link_to": "Drive Favorite",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Tag",
+   "link_count": 0,
+   "link_to": "Drive Tag",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Activity",
+   "link_count": 0,
+   "link_to": "Drive Activity",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drive Trash",
+   "link_count": 0,
+   "link_to": "Drive Trash",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-03-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "Drive",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 1,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Drive File",
+   "link_to": "Drive File",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Drive Folder",
+   "link_to": "Drive Folder",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Drive Share",
+   "link_to": "Drive Share",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "doc_view": "List",
+   "label": "Drive Favorite",
+   "link_to": "Drive Favorite",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Drive Trash",
+   "link_to": "Drive Trash",
+   "type": "DocType"
+  }
+ ],
+ "title": "Drive"
+}

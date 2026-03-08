@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-03-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "share_section",
+  "shared_doctype",
+  "shared_name",
+  "cb_share",
+  "shared_with",
+  "permission_level",
+  "link_section",
+  "share_link",
+  "link_password",
+  "expires_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "share_section",
+   "fieldtype": "Section Break",
+   "label": "Share"
+  },
+  {
+   "fieldname": "shared_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Shared DocType",
+   "options": "Drive File\nDrive Folder",
+   "reqd": 1
+  },
+  {
+   "fieldname": "shared_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Shared Name",
+   "options": "shared_doctype",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_share",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shared_with",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Shared With",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "default": "View",
+   "fieldname": "permission_level",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Permission Level",
+   "options": "View\nEdit\nManage"
+  },
+  {
+   "fieldname": "link_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "share_link",
+   "fieldtype": "Data",
+   "label": "Share Link",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "link_password",
+   "fieldtype": "Password",
+   "label": "Link Password"
+  },
+  {
+   "fieldname": "expires_on",
+   "fieldtype": "Datetime",
+   "label": "Expires On"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "Drive Share",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Drive Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Drive User",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

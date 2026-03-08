@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "creation": "2026-03-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "storage_section",
+  "max_file_size_mb",
+  "max_storage_gb",
+  "cb_storage",
+  "allowed_extensions",
+  "enable_versioning",
+  "trash_section",
+  "trash_retention_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "storage_section",
+   "fieldtype": "Section Break",
+   "label": "Storage"
+  },
+  {
+   "default": "100",
+   "fieldname": "max_file_size_mb",
+   "fieldtype": "Int",
+   "label": "Max File Size (MB)"
+  },
+  {
+   "default": "10",
+   "fieldname": "max_storage_gb",
+   "fieldtype": "Int",
+   "label": "Max Storage (GB)"
+  },
+  {
+   "fieldname": "cb_storage",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Comma-separated",
+   "fieldname": "allowed_extensions",
+   "fieldtype": "Small Text",
+   "label": "Allowed Extensions"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_versioning",
+   "fieldtype": "Check",
+   "label": "Enable Versioning"
+  },
+  {
+   "fieldname": "trash_section",
+   "fieldtype": "Section Break",
+   "label": "Trash"
+  },
+  {
+   "default": "30",
+   "description": "Days before auto-delete",
+   "fieldname": "trash_retention_days",
+   "fieldtype": "Int",
+   "label": "Trash Retention Days"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-03-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "Drive Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Drive Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

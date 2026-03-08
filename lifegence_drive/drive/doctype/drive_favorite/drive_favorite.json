@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-03-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "favorited_doctype",
+  "favorited_name",
+  "user"
+ ],
+ "fields": [
+  {
+   "fieldname": "favorited_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Favorited DocType",
+   "options": "Drive File\nDrive Folder",
+   "reqd": 1
+  },
+  {
+   "fieldname": "favorited_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Favorited Name",
+   "options": "favorited_doctype",
+   "reqd": 1
+  },
+  {
+   "default": "__user",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "Drive Favorite",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Drive User",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

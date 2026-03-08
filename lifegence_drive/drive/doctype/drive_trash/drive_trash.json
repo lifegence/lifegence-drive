@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-03-08 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "trash_section",
+  "original_doctype",
+  "original_name",
+  "cb_trash",
+  "deleted_by",
+  "deleted_on",
+  "details_section",
+  "original_folder",
+  "expires_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "trash_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "original_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Original DocType",
+   "options": "Drive File\nDrive Folder",
+   "reqd": 1
+  },
+  {
+   "fieldname": "original_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Original Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_trash",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "__user",
+   "fieldname": "deleted_by",
+   "fieldtype": "Link",
+   "label": "Deleted By",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "default": "Now",
+   "fieldname": "deleted_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Deleted On"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "original_folder",
+   "fieldtype": "Link",
+   "label": "Original Folder",
+   "options": "Drive Folder"
+  },
+  {
+   "fieldname": "expires_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Expires On"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-08 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "Drive Trash",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Drive Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "if_owner": 1,
+   "read": 1,
+   "role": "Drive User",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
