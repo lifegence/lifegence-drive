@@ -115,7 +115,7 @@
    "fieldname": "tags",
    "fieldtype": "Table MultiSelect",
    "label": "Tags",
-   "options": "Drive Tag"
+   "options": "Drive File Tag"
   }
  ],
  "links": [],
