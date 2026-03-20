@@ -10,7 +10,7 @@ def auto_delete_expired_trash():
 		"Drive Trash",
 		filters={"expires_on": ["<", cutoff]},
 		fields=["name"],
-		limit_page_length=500,
+		limit=500,
 	)
 	for item in expired:
 		frappe.delete_doc("Drive Trash", item.name, ignore_permissions=True)

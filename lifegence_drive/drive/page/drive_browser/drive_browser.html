@@ -1,0 +1,105 @@
+<div class="drive-browser">
+	<div class="drive-layout">
+		<!-- Sidebar -->
+		<div class="drive-sidebar">
+			<div class="drive-sidebar-actions">
+				<button class="btn btn-primary btn-sm btn-new-folder">
+					<i class="fa fa-folder-plus"></i> {{ __("New Folder") }}
+				</button>
+				<button class="btn btn-primary btn-sm btn-upload">
+					<i class="fa fa-upload"></i> {{ __("Upload") }}
+				</button>
+			</div>
+			<ul class="drive-nav list-unstyled">
+				<li class="drive-nav-item active" data-view="my-files">
+					<i class="fa fa-folder"></i> {{ __("My Files") }}
+				</li>
+				<li class="drive-nav-item" data-view="shared">
+					<i class="fa fa-share-alt"></i> {{ __("Shared") }}
+				</li>
+				<li class="drive-nav-item" data-view="favorites">
+					<i class="fa fa-star"></i> {{ __("Favorites") }}
+				</li>
+				<li class="drive-nav-item" data-view="recent">
+					<i class="fa fa-clock"></i> {{ __("Recent") }}
+				</li>
+				<li class="drive-nav-item" data-view="trash">
+					<i class="fa fa-trash"></i> {{ __("Trash") }}
+				</li>
+			</ul>
+			<div class="drive-storage-info">
+				<div class="storage-label">{{ __("Storage") }}</div>
+				<div class="progress">
+					<div class="progress-bar" role="progressbar" style="width: 0%"></div>
+				</div>
+				<div class="storage-text text-muted small"></div>
+			</div>
+		</div>
+
+		<!-- Main Content -->
+		<div class="drive-main">
+			<!-- Toolbar -->
+			<div class="drive-toolbar">
+				<div class="drive-breadcrumb"></div>
+				<div class="drive-toolbar-actions">
+					<div class="drive-search">
+						<input type="text" class="form-control form-control-sm"
+							placeholder="{{ __('Search files...') }}">
+					</div>
+					<div class="btn-group btn-group-sm drive-view-toggle">
+						<button class="btn btn-default active" data-view-mode="grid" title="{{ __('Grid') }}">
+							<i class="fa fa-th-large"></i>
+						</button>
+						<button class="btn btn-default" data-view-mode="list" title="{{ __('List') }}">
+							<i class="fa fa-list"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Drop Zone -->
+			<div class="drive-dropzone" style="display: none;">
+				<div class="dropzone-message">
+					<i class="fa fa-cloud-upload fa-3x"></i>
+					<p>{{ __("Drop files here to upload") }}</p>
+				</div>
+			</div>
+
+			<!-- Content Area -->
+			<div class="drive-content">
+				<div class="drive-grid"></div>
+				<div class="drive-list" style="display: none;"></div>
+				<div class="drive-empty text-center text-muted" style="display: none;">
+					<i class="fa fa-folder-open fa-3x mb-3"></i>
+					<p>{{ __("This folder is empty") }}</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Detail Panel -->
+		<div class="drive-detail-panel" style="display: none;">
+			<div class="detail-header">
+				<span class="detail-title"></span>
+				<button class="btn btn-sm btn-default detail-close">&times;</button>
+			</div>
+			<div class="detail-body"></div>
+		</div>
+	</div>
+
+	<!-- Context Menu -->
+	<div class="drive-context-menu" style="display: none;">
+		<ul class="list-unstyled">
+			<li data-action="open"><i class="fa fa-folder-open"></i> {{ __("Open") }}</li>
+			<li data-action="download"><i class="fa fa-download"></i> {{ __("Download") }}</li>
+			<li data-action="rename"><i class="fa fa-edit"></i> {{ __("Rename") }}</li>
+			<li data-action="move"><i class="fa fa-arrows-alt"></i> {{ __("Move") }}</li>
+			<li data-action="share"><i class="fa fa-share-alt"></i> {{ __("Share") }}</li>
+			<li data-action="favorite"><i class="fa fa-star"></i> {{ __("Favorite") }}</li>
+			<li class="divider"></li>
+			<li data-action="details"><i class="fa fa-info-circle"></i> {{ __("Details") }}</li>
+			<li data-action="versions"><i class="fa fa-history"></i> {{ __("Version History") }}</li>
+			<li class="divider"></li>
+			<li data-action="trash" class="text-danger"><i class="fa fa-trash"></i> {{ __("Move to Trash") }}</li>
+		</ul>
+	</div>
+</div>

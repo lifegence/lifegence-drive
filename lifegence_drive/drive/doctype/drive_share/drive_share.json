@@ -47,8 +47,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Shared With",
-   "options": "User",
-   "reqd": 1
+   "options": "User"
   },
   {
    "default": "View",

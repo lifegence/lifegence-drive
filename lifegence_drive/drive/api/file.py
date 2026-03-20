@@ -1,0 +1,186 @@
+import os
+import mimetypes
+
+import frappe
+from frappe import _
+
+from lifegence_drive.drive.services.storage_service import (
+	check_quota,
+	validate_extension,
+	validate_file_size,
+)
+from lifegence_drive.drive.services.activity_service import log_activity
+
+
+@frappe.whitelist()
+def upload(folder: str | None = None, is_private: int = 0):
+	"""Upload a file to Drive.
+
+	Accepts multipart form data with a file attachment.
+	Returns the created Drive File document.
+	"""
+	files = frappe.request.files
+	if not files or "file" not in files:
+		frappe.throw(_("No file uploaded."))
+
+	uploaded = files["file"]
+	filename = frappe.utils.escape_html(uploaded.filename)
+	content = uploaded.read()
+	file_size = len(content)
+	extension = os.path.splitext(filename)[1].lstrip(".").lower()
+	mime_type = uploaded.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
+	# Validations
+	validate_file_size(file_size)
+	validate_extension(extension)
+	check_quota(file_size)
+
+	if folder and not frappe.db.exists("Drive Folder", folder):
+		frappe.throw(_("Folder {0} does not exist.").format(folder))
+
+	# Save physical file via Frappe's File doctype
+	frappe_file = frappe.get_doc({
+		"doctype": "File",
+		"file_name": filename,
+		"content": content,
+		"is_private": int(is_private),
+	})
+	frappe_file.save(ignore_permissions=True)
+
+	# Create Drive File record
+	drive_file = frappe.get_doc({
+		"doctype": "Drive File",
+		"file_name": filename,
+		"file_url": frappe_file.file_url,
+		"file_size": file_size,
+		"mime_type": mime_type,
+		"extension": extension,
+		"folder": folder or "",
+		"is_private": int(is_private),
+		"uploaded_by": frappe.session.user,
+	})
+	drive_file.insert()
+
+	log_activity("Upload", "Drive File", drive_file.name, f"Uploaded {filename}")
+
+	return drive_file
+
+
+@frappe.whitelist(allow_guest=True)
+def download(name: str | None = None, share_link: str | None = None):
+	"""Download a Drive File by name or share_link.
+
+	Returns a file download response.
+	"""
+	file_url = None
+	filename = None
+
+	if share_link:
+		share = frappe.db.get_value(
+			"Drive Share",
+			{"share_link": share_link},
+			["shared_doctype", "shared_name", "expires_on", "link_password"],
+			as_dict=True,
+		)
+		if not share:
+			frappe.throw(_("Invalid share link."), frappe.PermissionError)
+
+		if share.expires_on and frappe.utils.now_datetime() > share.expires_on:
+			frappe.throw(_("This share link has expired."), frappe.PermissionError)
+
+		if share.shared_doctype != "Drive File":
+			frappe.throw(_("Share link does not point to a file."))
+
+		name = share.shared_name
+
+	if not name:
+		frappe.throw(_("File name is required."))
+
+	drive_file = frappe.get_doc("Drive File", name)
+	file_url = drive_file.file_url
+	filename = drive_file.file_name
+
+	if not file_url:
+		frappe.throw(_("File URL not found."))
+
+	if not share_link:
+		log_activity("Download", "Drive File", name, f"Downloaded {filename}")
+
+	frappe.local.response.filename = filename
+	frappe.local.response.filecontent = _read_file_content(file_url)
+	frappe.local.response.type = "download"
+
+
+def _read_file_content(file_url: str) -> bytes:
+	"""Read file content from Frappe's file system."""
+	file_path = frappe.utils.get_files_path(
+		file_url.replace("/files/", "").replace("/private/files/", ""),
+		is_private="/private/" in file_url,
+	)
+	with open(file_path, "rb") as f:
+		return f.read()
+
+
+@frappe.whitelist()
+def rename(name: str, new_name: str):
+	"""Rename a Drive File."""
+	drive_file = frappe.get_doc("Drive File", name)
+	old_name = drive_file.file_name
+	drive_file.file_name = frappe.utils.escape_html(new_name)
+	drive_file.save()
+
+	log_activity("Rename", "Drive File", name, f"Renamed '{old_name}' to '{new_name}'")
+
+	return drive_file
+
+
+@frappe.whitelist()
+def move(name: str, target_folder: str | None = None):
+	"""Move a Drive File to another folder."""
+	drive_file = frappe.get_doc("Drive File", name)
+	old_folder = drive_file.folder
+
+	if target_folder and not frappe.db.exists("Drive Folder", target_folder):
+		frappe.throw(_("Target folder does not exist."))
+
+	drive_file.folder = target_folder or ""
+	drive_file.save()
+
+	log_activity(
+		"Move", "Drive File", name,
+		f"Moved from '{old_folder or 'root'}' to '{target_folder or 'root'}'",
+	)
+
+	return drive_file
+
+
+@frappe.whitelist()
+def get_files(folder: str | None = None, order_by: str = "modified desc", limit: int = 50, start: int = 0):
+	"""List Drive Files in a folder (or root if no folder specified)."""
+	filters = {}
+	if folder:
+		filters["folder"] = folder
+	else:
+		filters["folder"] = ("in", ["", None])
+
+	# Exclude trashed files
+	trashed = frappe.get_all("Drive Trash", filters={"original_doctype": "Drive File"}, pluck="original_name")
+	if trashed:
+		filters["name"] = ("not in", trashed)
+
+	allowed_orders = {
+		"modified desc", "modified asc", "file_name asc", "file_name desc",
+		"file_size asc", "file_size desc", "creation desc", "creation asc",
+	}
+	if order_by not in allowed_orders:
+		order_by = "modified desc"
+
+	return frappe.get_all(
+		"Drive File",
+		filters=filters,
+		fields=["name", "file_name", "file_url", "file_size", "mime_type", "extension",
+				"folder", "uploaded_by", "is_private", "version", "creation", "modified"],
+		order_by=order_by,
+		limit=limit,
+		limit_start=start,
+	)

@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2026-03-20 00:00:00.000000",
+ "doctype": "Page",
+ "icon": "folder-normal",
+ "modified": "2026-03-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Drive",
+ "name": "drive-browser",
+ "owner": "Administrator",
+ "page_name": "drive-browser",
+ "roles": [
+  {
+   "role": "Drive User"
+  },
+  {
+   "role": "Drive Manager"
+  }
+ ],
+ "standard": "Yes",
+ "system_page": 0,
+ "title": "Drive"
+}
