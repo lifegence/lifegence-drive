@@ -1,39 +1,31 @@
 # Lifegence Drive
 
-> Google Drive-like file sharing app for [Frappe Framework](https://frappeframework.com/) v16+
+> File sharing app for [Frappe Framework](https://frappeframework.com/) v16+
 
-**Lifegence Drive** はドラッグ&ドロップでのファイルアップロード、フォルダ管理、共有リンク、バージョン管理、全文検索を備えた軽量ファイル共有アプリです。Frappe の標準機能のみで動作し、ERPNext は不要です。
+**Lifegence Drive** はフォルダ管理、共有リンク、バージョン管理、全文検索を備えた軽量ファイル共有アプリです。Frappe の標準機能のみで動作し、ERPNext は不要です。
 
 ---
 
 ## Features
 
 ### File Management
-- Drag & drop upload with progress indicator
-- Multiple file upload
+- Multiple file upload via API
 - Folder hierarchy (unlimited nesting via Nested Set)
 - File rename, move, and copy
 - Soft-delete trash with configurable auto-purge (default: 30 days)
 
-### File Browser UI
-- Google Drive-style file browser (`/app/drive-browser`)
-- Grid / List view toggle
-- Breadcrumb navigation
-- Right-click context menu
-- Keyboard shortcuts (`Ctrl+U` upload, `Ctrl+N` new folder, `F2` rename, `Ctrl+F` search)
-
-### Preview
-- Images (jpg, png, gif, svg, webp) — inline preview + grid thumbnails
+### Preview (DocType Form)
+- Images (jpg, png, gif, svg, webp) — inline preview
 - PDF — embedded viewer
 - Text / Code (txt, csv, json, xml, md, py, js, html, css) — syntax display
 - Video (mp4, webm) — HTML5 player
 - Audio (mp3, wav, ogg) — HTML5 player
+- Download button on form
 
 ### Sharing
 - Share with users (View / Edit / Manage permissions)
 - Shareable link with optional password and expiration
 - Email + in-app notification on share
-- "Shared with me" view
 
 ### Version History
 - Automatic versioning on file re-upload
@@ -42,17 +34,15 @@
 - Version comments
 
 ### Search & Organization
-- File name search with debounce
+- File name search via List View filters
 - Filter by file type, date range, owner, tags
 - Favorites
-- Recent files
 - Color-coded tags
 
 ### Storage Management
 - Per-tenant storage quota (configurable GB limit)
 - Per-file size limit (configurable MB limit)
 - Allowed file extension whitelist
-- Storage usage indicator in sidebar
 
 ### Activity Log
 - Full audit trail: Upload, Download, Rename, Move, Share, Unshare, Delete, Restore
@@ -183,20 +173,6 @@ After installation, configure via **Drive Settings** (`/app/drive-settings`):
 
 ---
 
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+U` | Upload files |
-| `Ctrl+N` | New folder |
-| `Ctrl+F` | Focus search |
-| `F2` | Rename selected |
-| `Enter` | Open selected |
-| `Delete` | Move to trash |
-| `Escape` | Clear selection |
-
----
-
 ## Development
 
 ```bash
@@ -228,11 +204,8 @@ lifegence_drive/
 │   │   ├── notification_service.py # Share notifications
 │   │   └── trash_service.py    # Scheduled trash cleanup
 │   ├── doctype/                # 9 DocTypes + 1 child table
-│   ├── page/
-│   │   └── drive_browser/      # File browser SPA
 │   └── tests/                  # 42 tests
 ├── public/
-│   ├── css/drive.css           # UI styles
 │   └── images/drive-logo.svg
 ├── hooks.py
 └── install.py

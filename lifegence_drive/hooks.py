@@ -11,14 +11,12 @@ export_python_type_annotations = True
 
 after_install = "lifegence_drive.install.after_install"
 
-app_include_css = "/assets/lifegence_drive/css/drive.css"
-
 add_to_apps_screen = [
 	{
 		"name": "lifegence_drive",
 		"logo": "/assets/lifegence_drive/images/drive-logo.svg",
 		"title": "ドライブ",
-		"route": "/app/drive-browser",
+		"route": "/app/drive-file",
 	},
 ]
 
