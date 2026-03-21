@@ -97,12 +97,16 @@ def generate_link(
 @frappe.whitelist()
 def get_shares(shared_doctype: str, shared_name: str):
 	"""Get all shares for a file or folder."""
-	return frappe.get_all(
+	shares = frappe.get_all(
 		"Drive Share",
 		filters={"shared_doctype": shared_doctype, "shared_name": shared_name},
-		fields=["name", "shared_with", "permission_level", "share_link", "expires_on", "creation"],
+		fields=["name", "shared_with", "permission_level", "share_link", "link_password", "expires_on", "creation"],
 		order_by="creation desc",
 	)
+	# Don't expose actual password — just flag whether one is set
+	for s in shares:
+		s["has_password"] = bool(s.pop("link_password", None))
+	return shares
 
 
 @frappe.whitelist()

@@ -605,12 +605,18 @@ function load_share_data(frm, dialog) {
 				let html = "";
 				link_shares.forEach((s, idx) => {
 					const dl_url = window.location.origin + "/api/method/lifegence_drive.drive.api.file.download?share_link=" + s.share_link;
-					const expiry = s.expires_on ? frappe.datetime.prettyDate(s.expires_on) : __("No expiration");
+					const expiry = s.expires_on ? __("Expires: {0}", [frappe.datetime.prettyDate(s.expires_on)]) : __("No expiration");
+					const pw_badge = s.has_password
+						? `<span class="indicator-pill orange">${__("Password protected")}</span>`
+						: `<span class="indicator-pill green">${__("No password")}</span>`;
+					const created = s.creation ? frappe.datetime.prettyDate(s.creation) : "";
 					const link_id = "share-dl-link-" + idx;
 					html += `<div class="mb-2 p-2" style="background: var(--bg-light-gray); border-radius: 6px; font-size: 13px;">
 						${copy_url_html(link_id, dl_url)}
-						<div class="mt-1 text-muted" style="font-size: 11px;">
-							${expiry}
+						<div class="mt-1" style="font-size: 11px;">
+							${pw_badge}
+							<span class="text-muted ml-2">${expiry}</span>
+							<span class="text-muted ml-2">${created}</span>
 							<button class="btn btn-xs btn-danger btn-remove-share ml-2" data-name="${s.name}">
 								<i class="fa fa-times"></i> ${__("Delete")}
 							</button>

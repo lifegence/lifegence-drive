@@ -67,10 +67,11 @@ def upload(folder: str | None = None, is_private: int = 0):
 
 
 @frappe.whitelist(allow_guest=True)
-def download(name: str | None = None, share_link: str | None = None):
+def download(name: str | None = None, share_link: str | None = None, password: str | None = None):
 	"""Download a Drive File by name or share_link.
 
 	Returns a file download response.
+	For share links with a password, pass ?password=xxx as a query parameter.
 	"""
 	via_share_link = False
 
@@ -82,13 +83,20 @@ def download(name: str | None = None, share_link: str | None = None):
 			as_dict=True,
 		)
 		if not share:
-			frappe.throw(_("Invalid share link."), frappe.PermissionError)
+			frappe.throw(_("Invalid or expired share link."), frappe.PermissionError)
 
 		if share.expires_on and frappe.utils.now_datetime() > share.expires_on:
 			frappe.throw(_("This share link has expired."), frappe.PermissionError)
 
 		if share.shared_doctype != "Drive File":
 			frappe.throw(_("Share link does not point to a file."))
+
+		# Password verification
+		if share.link_password:
+			if not password:
+				frappe.throw(_("This link requires a password. Add &password=xxx to the URL."), frappe.PermissionError)
+			if password != share.link_password:
+				frappe.throw(_("Incorrect password."), frappe.PermissionError)
 
 		name = share.shared_name
 		via_share_link = True
@@ -117,6 +125,56 @@ def download(name: str | None = None, share_link: str | None = None):
 	frappe.local.response.filename = filename
 	frappe.local.response.filecontent = _read_file_content(file_url)
 	frappe.local.response.type = "download"
+
+
+@frappe.whitelist(allow_guest=True)
+def preview_share(share_link: str | None = None, password: str | None = None):
+	"""Landing page for shared links. Returns file info (or password prompt).
+
+	Guest-safe endpoint that returns metadata without file content.
+	"""
+	if not share_link:
+		frappe.throw(_("Share link is required."))
+
+	share = frappe.db.get_value(
+		"Drive Share",
+		{"share_link": share_link},
+		["shared_doctype", "shared_name", "expires_on", "link_password"],
+		as_dict=True,
+	)
+	if not share:
+		frappe.throw(_("Invalid or expired share link."), frappe.PermissionError)
+
+	if share.expires_on and frappe.utils.now_datetime() > share.expires_on:
+		frappe.throw(_("This share link has expired."), frappe.PermissionError)
+
+	if share.shared_doctype != "Drive File":
+		frappe.throw(_("Share link does not point to a file."))
+
+	has_password = bool(share.link_password)
+
+	# If password required, verify before showing info
+	if has_password and not password:
+		return {"requires_password": True}
+
+	if has_password and password != share.link_password:
+		frappe.throw(_("Incorrect password."), frappe.PermissionError)
+
+	file_data = frappe.db.get_value(
+		"Drive File", share.shared_name,
+		["file_name", "file_size", "mime_type", "extension"],
+		as_dict=True,
+	)
+	if not file_data:
+		frappe.throw(_("File not found."))
+
+	return {
+		"requires_password": False,
+		"file_name": file_data.file_name,
+		"file_size": file_data.file_size,
+		"mime_type": file_data.mime_type,
+		"extension": file_data.extension,
+	}
 
 
 def _read_file_content(file_url: str) -> bytes:
