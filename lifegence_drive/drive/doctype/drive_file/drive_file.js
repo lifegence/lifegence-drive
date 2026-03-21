@@ -402,6 +402,12 @@ function share_dialog(frm) {
 		title: __("Share File"),
 		fields: [
 			{
+				fieldname: "existing_shares_html",
+				fieldtype: "HTML",
+				label: __("Current Shares"),
+			},
+			{ fieldtype: "Section Break", label: __("Add New Share") },
+			{
 				fieldname: "shared_with",
 				fieldtype: "Link",
 				label: __("Share With"),
@@ -427,13 +433,55 @@ function share_dialog(frm) {
 					permission_level: values.permission_level,
 				},
 				callback() {
-					d.hide();
 					frappe.show_alert({ message: __("Shared successfully"), indicator: "green" });
+					d.set_value("shared_with", "");
+					load_existing_shares(frm, d);
 				},
 			});
 		},
 	});
+	load_existing_shares(frm, d);
 	d.show();
+}
+
+function load_existing_shares(frm, dialog) {
+	frappe.call({
+		method: "lifegence_drive.drive.api.share.get_shares",
+		args: { shared_doctype: "Drive File", shared_name: frm.doc.name },
+		callback(r) {
+			const shares = (r.message || []).filter((s) => s.shared_with);
+			const $wrapper = dialog.fields_dict.existing_shares_html.$wrapper;
+			if (!shares.length) {
+				$wrapper.html(`<div class="text-muted" style="font-size: 13px;">${__("Not shared with anyone yet.")}</div>`);
+				return;
+			}
+			let html = '<table class="table table-sm" style="font-size: 13px; margin: 0;"><tbody>';
+			for (const s of shares) {
+				html += `<tr>
+					<td>${frappe.utils.escape_html(s.shared_with)}</td>
+					<td>${s.permission_level}</td>
+					<td class="text-right">
+						<button class="btn btn-xs btn-danger btn-remove-share" data-name="${s.name}">
+							<i class="fa fa-times"></i>
+						</button>
+					</td>
+				</tr>`;
+			}
+			html += "</tbody></table>";
+			$wrapper.html(html);
+			$wrapper.find(".btn-remove-share").on("click", function () {
+				const share_name = $(this).data("name");
+				frappe.call({
+					method: "lifegence_drive.drive.api.share.remove_share",
+					args: { name: share_name },
+					callback() {
+						frappe.show_alert({ message: __("Share removed"), indicator: "blue" });
+						load_existing_shares(frm, dialog);
+					},
+				});
+			});
+		},
+	});
 }
 
 function generate_link(frm) {
@@ -441,7 +489,7 @@ function generate_link(frm) {
 		title: __("Generate Shareable Link"),
 		fields: [
 			{
-				fieldname: "password",
+				fieldname: "link_password",
 				fieldtype: "Password",
 				label: __("Password (optional)"),
 			},
@@ -454,18 +502,22 @@ function generate_link(frm) {
 		],
 		primary_action_label: __("Generate"),
 		primary_action(values) {
+			let expires_on = "";
+			if (values.expires_in_days) {
+				expires_on = frappe.datetime.add_days(frappe.datetime.nowdate(), values.expires_in_days) + " 23:59:59";
+			}
 			frappe.call({
 				method: "lifegence_drive.drive.api.share.generate_link",
 				args: {
 					shared_doctype: "Drive File",
 					shared_name: frm.doc.name,
-					password: values.password || "",
-					expires_in_days: values.expires_in_days || 0,
+					link_password: values.link_password || "",
+					expires_on: expires_on,
 				},
 				callback(r) {
 					d.hide();
 					if (r.message) {
-						const link_url = window.location.origin + "/api/method/lifegence_drive.drive.api.file.download?share_link=" + r.message;
+						const link_url = r.message.url;
 						frappe.msgprint({
 							title: __("Shareable Link"),
 							message: `<div class="mb-2">${__("Copy this link")}:</div>
