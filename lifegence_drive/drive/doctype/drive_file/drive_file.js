@@ -2,9 +2,12 @@ frappe.ui.form.on("Drive File", {
 	refresh(frm) {
 		const $preview = frm.fields_dict.preview_html.$wrapper;
 
-		// New or no file — clear preview, no buttons
+		// New or no file — show upload UI instead of preview
 		if (frm.is_new() || !frm.doc.file_url) {
 			$preview.empty();
+			if (frm.is_new()) {
+				render_upload_zone(frm, $preview);
+			}
 			return;
 		}
 
@@ -28,6 +31,108 @@ frappe.ui.form.on("Drive File", {
 		render_preview(frm);
 	},
 });
+
+// ============================================================
+// Upload zone (for new Drive File form)
+// ============================================================
+
+function render_upload_zone(frm, $container) {
+	$container.html(`
+		<div class="drive-upload-zone" style="
+			padding: 48px 24px; background: var(--bg-light-gray);
+			border: 2px dashed var(--border-color); border-radius: 8px;
+			text-align: center; cursor: pointer; font-size: 14px;
+			transition: border-color 0.2s, background 0.2s;
+		">
+			<i class="fa fa-cloud-upload" style="font-size: 48px; color: var(--text-muted);"></i>
+			<div class="mt-3" style="font-size: 16px; font-weight: 500;">${__("Drop file here or click to upload")}</div>
+			<div class="mt-1 text-muted">${__("File will be saved to Drive automatically")}</div>
+			<input type="file" class="drive-file-input" style="display: none;">
+			<div class="drive-upload-progress mt-3" style="display: none;">
+				<div class="progress" style="height: 8px;">
+					<div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+				</div>
+				<div class="mt-1 text-muted drive-upload-status"></div>
+			</div>
+		</div>
+	`);
+
+	const $zone = $container.find(".drive-upload-zone");
+	const $input = $container.find(".drive-file-input");
+
+	// Click to select file
+	$zone.on("click", (e) => {
+		if (!$(e.target).is("input")) $input.trigger("click");
+	});
+
+	// Drag & drop
+	$zone.on("dragover", (e) => {
+		e.preventDefault();
+		$zone.css({ "border-color": "var(--primary)", "background": "var(--control-bg)" });
+	});
+	$zone.on("dragleave drop", () => {
+		$zone.css({ "border-color": "var(--border-color)", "background": "var(--bg-light-gray)" });
+	});
+	$zone.on("drop", (e) => {
+		e.preventDefault();
+		const files = e.originalEvent.dataTransfer.files;
+		if (files.length) do_upload(frm, $container, files[0]);
+	});
+
+	// File input change
+	$input.on("change", () => {
+		if ($input[0].files.length) do_upload(frm, $container, $input[0].files[0]);
+	});
+}
+
+function do_upload(frm, $container, file) {
+	const $progress = $container.find(".drive-upload-progress");
+	const $bar = $container.find(".progress-bar");
+	const $status = $container.find(".drive-upload-status");
+	$progress.show();
+	$status.text(__("Uploading {0}...", [file.name]));
+
+	const formData = new FormData();
+	formData.append("file", file);
+	formData.append("folder", frm.doc.folder || "");
+	formData.append("is_private", frm.doc.is_private || 0);
+
+	const xhr = new XMLHttpRequest();
+	xhr.open("POST", "/api/method/lifegence_drive.drive.api.file.upload");
+	xhr.setRequestHeader("X-Frappe-CSRF-Token", frappe.csrf_token);
+
+	xhr.upload.onprogress = (e) => {
+		if (e.lengthComputable) {
+			const pct = Math.round((e.loaded / e.total) * 100);
+			$bar.css("width", pct + "%");
+			$status.text(__("Uploading {0}... {1}%", [file.name, pct]));
+		}
+	};
+
+	xhr.onload = () => {
+		if (xhr.status === 200) {
+			const resp = JSON.parse(xhr.responseText);
+			if (resp.exc) {
+				$status.text(__("Upload failed"));
+				frappe.show_alert({ message: __("Upload failed"), indicator: "red" });
+				return;
+			}
+			const doc = resp.message;
+			frappe.show_alert({ message: __("File uploaded: {0}", [doc.file_name]), indicator: "green" });
+			frappe.set_route("Form", "Drive File", doc.name);
+		} else {
+			$status.text(__("Upload failed"));
+			frappe.show_alert({ message: __("Upload failed"), indicator: "red" });
+		}
+	};
+
+	xhr.onerror = () => {
+		$status.text(__("Upload failed"));
+		frappe.show_alert({ message: __("Upload failed"), indicator: "red" });
+	};
+
+	xhr.send(formData);
+}
 
 // ============================================================
 // Preview rendering
