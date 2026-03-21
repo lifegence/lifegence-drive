@@ -11,16 +11,20 @@ frappe.ui.form.on("Drive File", {
 			return;
 		}
 
+		// Hide Frappe's built-in share panel (we use Drive Share instead)
+		frm.sidebar && frm.sidebar.share_area && frm.sidebar.share_area.hide();
+
 		// --- Primary actions ---
 		frm.add_custom_button(__("Download"), () => {
 			window.open(frm.doc.file_url);
 		}, null, "primary");
 
+		// --- Share menu (top-level for visibility) ---
+		frm.add_custom_button(__("Share with User"), () => share_dialog(frm), __("Share"));
+		frm.add_custom_button(__("Get Shareable Link"), () => generate_link(frm), __("Share"));
+
 		// --- Actions menu ---
-		frm.add_custom_button(__("Share"), () => share_dialog(frm), __("Actions"));
-		frm.add_custom_button(__("Shareable Link"), () => generate_link(frm), __("Actions"));
 		frm.add_custom_button(__("Toggle Favorite"), () => toggle_favorite(frm), __("Actions"));
-		frm.add_custom_button(__("Move to Folder"), () => move_dialog(frm), __("Actions"));
 		frm.add_custom_button(__("Move to Trash"), () => move_to_trash(frm), __("Actions"));
 
 		// --- Version menu ---
@@ -556,37 +560,6 @@ function toggle_favorite(frm) {
 			});
 		},
 	});
-}
-
-function move_dialog(frm) {
-	const d = new frappe.ui.Dialog({
-		title: __("Move to Folder"),
-		fields: [
-			{
-				fieldname: "target_folder",
-				fieldtype: "Link",
-				label: __("Target Folder"),
-				options: "Drive Folder",
-				description: __("Leave empty to move to root"),
-			},
-		],
-		primary_action_label: __("Move"),
-		primary_action(values) {
-			frappe.call({
-				method: "lifegence_drive.drive.api.file.move",
-				args: {
-					name: frm.doc.name,
-					target_folder: values.target_folder || "",
-				},
-				callback() {
-					d.hide();
-					frappe.show_alert({ message: __("File moved"), indicator: "green" });
-					frm.reload_doc();
-				},
-			});
-		},
-	});
-	d.show();
 }
 
 function move_to_trash(frm) {
