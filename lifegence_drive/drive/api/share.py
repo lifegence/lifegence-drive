@@ -90,7 +90,7 @@ def generate_link(
 
 	return {
 		"share_link": share.share_link,
-		"url": f"{frappe.utils.get_url()}/api/method/lifegence_drive.drive.api.file.download?share_link={share.share_link}",
+		"url": f"{frappe.utils.get_url()}/drive-download?share_link={share.share_link}",
 	}
 
 

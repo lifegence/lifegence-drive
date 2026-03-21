@@ -29,3 +29,10 @@ scheduler_events = {
 fixtures = [
 	"Drive Settings",
 ]
+
+# Guest-accessible web pages
+website_route_rules = [
+	{"from_route": "/drive-download", "to_route": "drive_download"},
+]
+
+guest_pages = ["drive-download"]

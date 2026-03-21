@@ -1,0 +1,57 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<div style="max-width: 480px; margin: 60px auto; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+	{% if error %}
+		<div style="padding: 40px;">
+			<i class="fa fa-exclamation-circle" style="font-size: 48px; color: #e74c3c;"></i>
+			<h3 style="margin-top: 16px;">{{ error }}</h3>
+		</div>
+
+	{% elif has_password and not authenticated %}
+		<div style="padding: 32px; background: #f8f9fa; border-radius: 12px; border: 1px solid #dee2e6;">
+			<i class="fa fa-lock" style="font-size: 48px; color: #6c757d;"></i>
+			<h3 style="margin-top: 16px;">{{ file_name }}</h3>
+			<p style="color: #6c757d;">{{ extension }} &mdash; {{ file_size }}</p>
+
+			{% if password_error %}
+				<div style="color: #e74c3c; margin-bottom: 12px; font-weight: 500;">
+					<i class="fa fa-times-circle"></i> {{ _("Incorrect password. Please try again.") }}
+				</div>
+			{% endif %}
+
+			<form method="GET" action="/drive-download" style="margin-top: 20px;">
+				<input type="hidden" name="share_link" value="{{ share_link }}">
+				<div style="margin-bottom: 12px;">
+					<input type="password" name="password" placeholder="{{ _('Enter password') }}"
+						required autofocus
+						style="width: 100%; padding: 10px 14px; font-size: 15px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box;">
+				</div>
+				<button type="submit"
+					style="width: 100%; padding: 10px; font-size: 15px; background: #2490ef; color: white; border: none; border-radius: 6px; cursor: pointer;">
+					<i class="fa fa-unlock"></i> {{ _("Verify & Download") }}
+				</button>
+			</form>
+		</div>
+
+	{% elif authenticated %}
+		<div style="padding: 32px; background: #f8f9fa; border-radius: 12px; border: 1px solid #dee2e6;">
+			<i class="fa fa-file" style="font-size: 48px; color: #2490ef;"></i>
+			<h3 style="margin-top: 16px;">{{ file_name }}</h3>
+			<p style="color: #6c757d;">{{ extension }} &mdash; {{ file_size }}</p>
+			<a href="{{ download_url }}" target="_blank"
+				style="display: inline-block; margin-top: 20px; padding: 12px 32px; font-size: 16px; background: #2490ef; color: white; text-decoration: none; border-radius: 6px;">
+				<i class="fa fa-download"></i> {{ _("Download") }}
+			</a>
+		</div>
+
+	{% else %}
+		<div style="padding: 40px;">
+			<i class="fa fa-exclamation-circle" style="font-size: 48px; color: #e74c3c;"></i>
+			<h3 style="margin-top: 16px;">{{ _("Something went wrong.") }}</h3>
+		</div>
+	{% endif %}
+
+</div>
+{% endblock %}

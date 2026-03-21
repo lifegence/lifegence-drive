@@ -604,7 +604,7 @@ function load_share_data(frm, dialog) {
 			} else {
 				let html = "";
 				link_shares.forEach((s, idx) => {
-					const dl_url = window.location.origin + "/api/method/lifegence_drive.drive.api.file.download?share_link=" + s.share_link;
+					const dl_url = window.location.origin + "/drive-download?share_link=" + s.share_link;
 					const expiry = s.expires_on ? __("Expires: {0}", [frappe.datetime.prettyDate(s.expires_on)]) : __("No expiration");
 					const pw_badge = s.has_password
 						? `<span class="indicator-pill orange">${__("Password protected")}</span>`
