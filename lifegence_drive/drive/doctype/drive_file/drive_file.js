@@ -1,6 +1,12 @@
 frappe.ui.form.on("Drive File", {
 	refresh(frm) {
-		if (!frm.doc.file_url) return;
+		const $preview = frm.fields_dict.preview_html.$wrapper;
+
+		// New or no file — clear preview, no buttons
+		if (frm.is_new() || !frm.doc.file_url) {
+			$preview.empty();
+			return;
+		}
 
 		// --- Primary actions ---
 		frm.add_custom_button(__("Download"), () => {
@@ -31,7 +37,10 @@ function render_preview(frm) {
 	const url = frm.doc.file_url;
 	const ext = (frm.doc.extension || "").toLowerCase();
 	const mime = frm.doc.mime_type || "";
-	const $target = frm.fields_dict.preview_html.$wrapper;
+	const $wrapper = frm.fields_dict.preview_html.$wrapper;
+	// Wrap in a font-size-controlled container
+	$wrapper.html('<div class="drive-preview" style="font-size: 14px;"></div>');
+	const $target = $wrapper.find(".drive-preview");
 
 	// Image
 	if (mime.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico"].includes(ext)) {
