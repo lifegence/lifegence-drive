@@ -26,9 +26,8 @@ frappe.ui.form.on("Drive File", {
 			window.open(frm.doc.file_url);
 		}, null, "primary");
 
-		// --- Share menu (top-level for visibility) ---
-		frm.add_custom_button(__("Share with User"), () => share_dialog(frm), __("Share"));
-		frm.add_custom_button(__("Get Shareable Link"), () => generate_link(frm), __("Share"));
+		// --- Share button (top-level for visibility) ---
+		frm.add_custom_button(__("Share"), () => share_dialog(frm));
 
 		// --- Actions menu ---
 		frm.add_custom_button(__("Toggle Favorite"), () => toggle_favorite(frm), __("Actions"));
@@ -409,96 +408,32 @@ function file_icon_html(ext, doc) {
 // ============================================================
 
 function share_dialog(frm) {
+	const file_page_url = window.location.origin + "/app/drive-file/" + frm.doc.name;
+
 	const d = new frappe.ui.Dialog({
-		title: __("Share File"),
+		title: __("Share — {0}", [frm.doc.file_name]),
+		size: "large",
 		fields: [
+			// --- File URL (always visible) ---
 			{
-				fieldname: "existing_shares_html",
+				fieldname: "file_url_section",
+				fieldtype: "Section Break",
+				label: __("File Page URL"),
+			},
+			{
+				fieldname: "file_url_html",
 				fieldtype: "HTML",
-				label: __("Current Shares"),
 			},
-			{ fieldtype: "Section Break", label: __("Add New Share") },
+			// --- Shareable Link (guest download, no login required) ---
 			{
-				fieldname: "shared_with",
-				fieldtype: "Link",
-				label: __("Share With"),
-				options: "User",
-				reqd: 1,
+				fieldname: "link_section",
+				fieldtype: "Section Break",
+				label: __("Shareable Download Link (no login required)"),
 			},
 			{
-				fieldname: "permission_level",
-				fieldtype: "Select",
-				label: __("Permission"),
-				options: "View\nEdit\nManage",
-				default: "View",
+				fieldname: "existing_links_html",
+				fieldtype: "HTML",
 			},
-		],
-		primary_action_label: __("Share"),
-		primary_action(values) {
-			frappe.call({
-				method: "lifegence_drive.drive.api.share.create_share",
-				args: {
-					shared_doctype: "Drive File",
-					shared_name: frm.doc.name,
-					shared_with: values.shared_with,
-					permission_level: values.permission_level,
-				},
-				callback() {
-					frappe.show_alert({ message: __("Shared successfully"), indicator: "green" });
-					d.set_value("shared_with", "");
-					load_existing_shares(frm, d);
-				},
-			});
-		},
-	});
-	load_existing_shares(frm, d);
-	d.show();
-}
-
-function load_existing_shares(frm, dialog) {
-	frappe.call({
-		method: "lifegence_drive.drive.api.share.get_shares",
-		args: { shared_doctype: "Drive File", shared_name: frm.doc.name },
-		callback(r) {
-			const shares = (r.message || []).filter((s) => s.shared_with);
-			const $wrapper = dialog.fields_dict.existing_shares_html.$wrapper;
-			if (!shares.length) {
-				$wrapper.html(`<div class="text-muted" style="font-size: 13px;">${__("Not shared with anyone yet.")}</div>`);
-				return;
-			}
-			let html = '<table class="table table-sm" style="font-size: 13px; margin: 0;"><tbody>';
-			for (const s of shares) {
-				html += `<tr>
-					<td>${frappe.utils.escape_html(s.shared_with)}</td>
-					<td>${s.permission_level}</td>
-					<td class="text-right">
-						<button class="btn btn-xs btn-danger btn-remove-share" data-name="${s.name}">
-							<i class="fa fa-times"></i>
-						</button>
-					</td>
-				</tr>`;
-			}
-			html += "</tbody></table>";
-			$wrapper.html(html);
-			$wrapper.find(".btn-remove-share").on("click", function () {
-				const share_name = $(this).data("name");
-				frappe.call({
-					method: "lifegence_drive.drive.api.share.remove_share",
-					args: { name: share_name },
-					callback() {
-						frappe.show_alert({ message: __("Share removed"), indicator: "blue" });
-						load_existing_shares(frm, dialog);
-					},
-				});
-			});
-		},
-	});
-}
-
-function generate_link(frm) {
-	const d = new frappe.ui.Dialog({
-		title: __("Generate Shareable Link"),
-		fields: [
 			{
 				fieldname: "link_password",
 				fieldtype: "Password",
@@ -510,46 +445,195 @@ function generate_link(frm) {
 				label: __("Expires in (days)"),
 				description: __("Leave empty for no expiration"),
 			},
+			{
+				fieldname: "generate_link_btn",
+				fieldtype: "HTML",
+			},
+			// --- User Share ---
+			{
+				fieldname: "user_section",
+				fieldtype: "Section Break",
+				label: __("Share with Specific User"),
+			},
+			{
+				fieldname: "existing_shares_html",
+				fieldtype: "HTML",
+			},
+			{
+				fieldname: "shared_with",
+				fieldtype: "Link",
+				label: __("User"),
+				options: "User",
+			},
+			{
+				fieldname: "permission_level",
+				fieldtype: "Select",
+				label: __("Permission"),
+				options: "View\nEdit\nManage",
+				default: "View",
+			},
+			{
+				fieldname: "add_share_btn",
+				fieldtype: "HTML",
+			},
 		],
-		primary_action_label: __("Generate"),
-		primary_action(values) {
-			let expires_on = "";
-			if (values.expires_in_days) {
-				expires_on = frappe.datetime.add_days(frappe.datetime.nowdate(), values.expires_in_days) + " 23:59:59";
+	});
+
+	// --- File page URL with copy button ---
+	d.fields_dict.file_url_html.$wrapper.html(copy_url_html("file-page-url", file_page_url));
+
+	// --- Generate Link button ---
+	d.fields_dict.generate_link_btn.$wrapper.html(
+		`<button class="btn btn-sm btn-primary btn-generate-link">${__("Generate Download Link")}</button>`
+	);
+	d.fields_dict.generate_link_btn.$wrapper.find(".btn-generate-link").on("click", () => {
+		const pw = d.get_value("link_password") || "";
+		const days = d.get_value("expires_in_days") || 0;
+		let expires_on = "";
+		if (days) {
+			expires_on = frappe.datetime.add_days(frappe.datetime.nowdate(), days) + " 23:59:59";
+		}
+		frappe.call({
+			method: "lifegence_drive.drive.api.share.generate_link",
+			args: {
+				shared_doctype: "Drive File",
+				shared_name: frm.doc.name,
+				link_password: pw,
+				expires_on: expires_on,
+			},
+			callback(r) {
+				if (r.message) {
+					frappe.show_alert({ message: __("Link generated"), indicator: "green" });
+					d.set_value("link_password", "");
+					d.set_value("expires_in_days", "");
+					load_share_data(frm, d);
+				}
+			},
+		});
+	});
+
+	// --- Add User Share button ---
+	d.fields_dict.add_share_btn.$wrapper.html(
+		`<button class="btn btn-sm btn-primary btn-add-user-share">${__("Add User")}</button>`
+	);
+	d.fields_dict.add_share_btn.$wrapper.find(".btn-add-user-share").on("click", () => {
+		const user = d.get_value("shared_with");
+		if (!user) {
+			frappe.show_alert({ message: __("Please select a user"), indicator: "orange" });
+			return;
+		}
+		frappe.call({
+			method: "lifegence_drive.drive.api.share.create_share",
+			args: {
+				shared_doctype: "Drive File",
+				shared_name: frm.doc.name,
+				shared_with: user,
+				permission_level: d.get_value("permission_level"),
+			},
+			callback() {
+				frappe.show_alert({ message: __("Shared with {0}", [user]), indicator: "green" });
+				d.set_value("shared_with", "");
+				load_share_data(frm, d);
+			},
+		});
+	});
+
+	load_share_data(frm, d);
+	d.show();
+
+	// Remove default primary action button (we use inline buttons instead)
+	d.$wrapper.find(".btn-modal-primary").hide();
+}
+
+function copy_url_html(id, url) {
+	return `<div class="input-group" style="font-size: 13px;">
+		<input type="text" class="form-control" value="${frappe.utils.escape_html(url)}" readonly id="${id}">
+		<span class="input-group-btn">
+			<button class="btn btn-default btn-copy-url" data-target="${id}">
+				<i class="fa fa-copy"></i> ${__("Copy")}
+			</button>
+		</span>
+	</div>`;
+}
+
+// Delegate copy button clicks
+$(document).off("click.drivecopy").on("click.drivecopy", ".btn-copy-url", function () {
+	const target_id = $(this).data("target");
+	const el = document.getElementById(target_id);
+	if (el) {
+		el.select();
+		document.execCommand("copy");
+		frappe.show_alert({ message: __("Copied!"), indicator: "green" });
+	}
+});
+
+function load_share_data(frm, dialog) {
+	frappe.call({
+		method: "lifegence_drive.drive.api.share.get_shares",
+		args: { shared_doctype: "Drive File", shared_name: frm.doc.name },
+		callback(r) {
+			const all_shares = r.message || [];
+			const user_shares = all_shares.filter((s) => s.shared_with);
+			const link_shares = all_shares.filter((s) => s.share_link);
+
+			// --- Existing user shares ---
+			const $users = dialog.fields_dict.existing_shares_html.$wrapper;
+			if (!user_shares.length) {
+				$users.html(`<div class="text-muted mb-2" style="font-size: 13px;">${__("Not shared with anyone yet.")}</div>`);
+			} else {
+				let html = '<table class="table table-sm mb-2" style="font-size: 13px; margin: 0;"><tbody>';
+				for (const s of user_shares) {
+					html += `<tr>
+						<td>${frappe.utils.escape_html(s.shared_with)}</td>
+						<td class="text-muted">${s.permission_level}</td>
+						<td class="text-right">
+							<button class="btn btn-xs btn-danger btn-remove-share" data-name="${s.name}">
+								<i class="fa fa-times"></i>
+							</button>
+						</td>
+					</tr>`;
+				}
+				html += "</tbody></table>";
+				$users.html(html);
 			}
-			frappe.call({
-				method: "lifegence_drive.drive.api.share.generate_link",
-				args: {
-					shared_doctype: "Drive File",
-					shared_name: frm.doc.name,
-					link_password: values.link_password || "",
-					expires_on: expires_on,
-				},
-				callback(r) {
-					d.hide();
-					if (r.message) {
-						const link_url = r.message.url;
-						frappe.msgprint({
-							title: __("Shareable Link"),
-							message: `<div class="mb-2">${__("Copy this link")}:</div>
-								<div class="input-group">
-									<input type="text" class="form-control" value="${link_url}" readonly id="share-link-input">
-									<span class="input-group-btn">
-										<button class="btn btn-default" onclick="
-											document.getElementById('share-link-input').select();
-											document.execCommand('copy');
-											frappe.show_alert({message: '${__("Copied!")}', indicator: 'green'});
-										"><i class="fa fa-copy"></i></button>
-									</span>
-								</div>`,
-							indicator: "blue",
-						});
-					}
-				},
+
+			// --- Existing share links ---
+			const $links = dialog.fields_dict.existing_links_html.$wrapper;
+			if (!link_shares.length) {
+				$links.html(`<div class="text-muted mb-2" style="font-size: 13px;">${__("No download links generated yet.")}</div>`);
+			} else {
+				let html = "";
+				link_shares.forEach((s, idx) => {
+					const dl_url = window.location.origin + "/api/method/lifegence_drive.drive.api.file.download?share_link=" + s.share_link;
+					const expiry = s.expires_on ? frappe.datetime.prettyDate(s.expires_on) : __("No expiration");
+					const link_id = "share-dl-link-" + idx;
+					html += `<div class="mb-2 p-2" style="background: var(--bg-light-gray); border-radius: 6px; font-size: 13px;">
+						${copy_url_html(link_id, dl_url)}
+						<div class="mt-1 text-muted" style="font-size: 11px;">
+							${expiry}
+							<button class="btn btn-xs btn-danger btn-remove-share ml-2" data-name="${s.name}">
+								<i class="fa fa-times"></i> ${__("Delete")}
+							</button>
+						</div>
+					</div>`;
+				});
+				$links.html(html);
+			}
+
+			// --- Remove share handler ---
+			dialog.$wrapper.find(".btn-remove-share").off("click").on("click", function () {
+				const share_name = $(this).data("name");
+				frappe.call({
+					method: "lifegence_drive.drive.api.share.remove_share",
+					args: { name: share_name },
+					callback() {
+						frappe.show_alert({ message: __("Removed"), indicator: "blue" });
+						load_share_data(frm, dialog);
+					},
+				});
 			});
 		},
 	});
-	d.show();
 }
 
 function toggle_favorite(frm) {
