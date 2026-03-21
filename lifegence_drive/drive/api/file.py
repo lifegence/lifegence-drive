@@ -72,8 +72,7 @@ def download(name: str | None = None, share_link: str | None = None):
 
 	Returns a file download response.
 	"""
-	file_url = None
-	filename = None
+	via_share_link = False
 
 	if share_link:
 		share = frappe.db.get_value(
@@ -92,19 +91,28 @@ def download(name: str | None = None, share_link: str | None = None):
 			frappe.throw(_("Share link does not point to a file."))
 
 		name = share.shared_name
+		via_share_link = True
 
 	if not name:
 		frappe.throw(_("File name is required."))
 
-	drive_file = frappe.get_doc("Drive File", name)
-	file_url = drive_file.file_url
-	filename = drive_file.file_name
+	if via_share_link:
+		# Bypass permission check for valid share links (guest access)
+		file_data = frappe.db.get_value(
+			"Drive File", name, ["file_name", "file_url"], as_dict=True,
+		)
+		if not file_data:
+			frappe.throw(_("File not found."))
+		file_url = file_data.file_url
+		filename = file_data.file_name
+	else:
+		drive_file = frappe.get_doc("Drive File", name)
+		file_url = drive_file.file_url
+		filename = drive_file.file_name
+		log_activity("Download", "Drive File", name, f"Downloaded {filename}")
 
 	if not file_url:
 		frappe.throw(_("File URL not found."))
-
-	if not share_link:
-		log_activity("Download", "Drive File", name, f"Downloaded {filename}")
 
 	frappe.local.response.filename = filename
 	frappe.local.response.filecontent = _read_file_content(file_url)
