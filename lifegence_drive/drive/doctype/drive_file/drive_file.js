@@ -11,8 +11,15 @@ frappe.ui.form.on("Drive File", {
 			return;
 		}
 
-		// Hide Frappe's built-in share panel (we use Drive Share instead)
-		frm.sidebar && frm.sidebar.share_area && frm.sidebar.share_area.hide();
+		// Disable Frappe's built-in DocShare completely (we use Drive Share)
+		if (frm.sidebar) {
+			frm.sidebar.share_area && frm.sidebar.share_area.hide();
+			frm.sidebar.shared && frm.sidebar.shared.hide();
+		}
+		// Override Frappe's share_doc to redirect to our Drive Share dialog
+		frm.share_doc = () => share_dialog(frm);
+		// Hide the share icon/button in the page actions
+		frm.page && frm.page.wrapper && frm.page.wrapper.find('.share-doc-btn, [data-original-title="Share"], .share-btn').hide();
 
 		// --- Primary actions ---
 		frm.add_custom_button(__("Download"), () => {
