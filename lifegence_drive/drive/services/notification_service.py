@@ -26,7 +26,7 @@ def notify_share(share_doc):
 			"<p>{0} has shared a {1} with you:</p>"
 			"<p><strong>{2}</strong></p>"
 			"<p>Permission: {3}</p>"
-			"<p><a href='{4}/app/drive-browser'>Open Drive</a></p>"
+			"<p><a href='{4}/app/drive-file'>Open Drive</a></p>"
 		).format(
 			shared_by_name,
 			_("file") if share_doc.shared_doctype == "Drive File" else _("folder"),
