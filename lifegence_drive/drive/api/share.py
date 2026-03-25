@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 
 from lifegence_drive.drive.services.activity_service import log_activity
+from lifegence_drive.drive.services.permission_service import can_manage_file
 
 
 @frappe.whitelist()
@@ -17,6 +18,10 @@ def create_share(
 
 	if not frappe.db.exists(shared_doctype, shared_name):
 		frappe.throw(_(f"{shared_doctype} does not exist."))
+
+	# Only the owner can share a file
+	if shared_doctype == "Drive File" and not can_manage_file(frappe.session.user, shared_name):
+		frappe.throw(_("You can only share files you own."), frappe.PermissionError)
 
 	if not frappe.db.exists("User", shared_with):
 		frappe.throw(_("User {0} does not exist.").format(shared_with))
@@ -75,16 +80,24 @@ def generate_link(
 	if shared_doctype not in ("Drive File", "Drive Folder"):
 		frappe.throw(_("Invalid doctype for sharing."))
 
+	# Only the owner can generate share links
+	if shared_doctype == "Drive File" and not can_manage_file(frappe.session.user, shared_name):
+		frappe.throw(_("You can only create share links for files you own."), frappe.PermissionError)
+
 	share = frappe.get_doc({
 		"doctype": "Drive Share",
 		"shared_doctype": shared_doctype,
 		"shared_name": shared_name,
 		"permission_level": permission_level,
 		"share_link": frappe.generate_hash(length=20),
-		"link_password": link_password or "",
+		"link_password": "",
 		"expires_on": expires_on or "",
 	})
 	share.insert()
+
+	if link_password:
+		from werkzeug.security import generate_password_hash
+		share.db_set("password_hash", generate_password_hash(link_password), update_modified=False)
 
 	log_activity("Share", shared_doctype, shared_name, "Generated share link")
 
@@ -100,12 +113,12 @@ def get_shares(shared_doctype: str, shared_name: str):
 	shares = frappe.get_all(
 		"Drive Share",
 		filters={"shared_doctype": shared_doctype, "shared_name": shared_name},
-		fields=["name", "shared_with", "permission_level", "share_link", "link_password", "expires_on", "creation"],
+		fields=["name", "shared_with", "permission_level", "share_link", "link_password", "password_hash", "expires_on", "creation"],
 		order_by="creation desc",
 	)
 	# Don't expose actual password — just flag whether one is set
 	for s in shares:
-		s["has_password"] = bool(s.pop("link_password", None))
+		s["has_password"] = bool(s.pop("link_password", None)) or bool(s.pop("password_hash", None))
 	return shares
 
 

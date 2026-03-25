@@ -1,6 +1,8 @@
 import frappe
 from frappe import _
 
+from lifegence_drive.drive.services.permission_service import get_accessible_file_names
+
 
 @frappe.whitelist()
 def search(
@@ -58,6 +60,10 @@ def search(
 		limit=limit,
 		limit_start=start,
 	)
+
+	# Permission filter: only show files the user can access
+	accessible = get_accessible_file_names()
+	files = [f for f in files if f.name in accessible]
 
 	# Filter by tags if specified
 	if tags:

@@ -14,6 +14,7 @@
   "link_section",
   "share_link",
   "link_password",
+  "password_hash",
   "expires_on"
  ],
  "fields": [
@@ -74,13 +75,19 @@
    "label": "Link Password"
   },
   {
+   "fieldname": "password_hash",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Password Hash"
+  },
+  {
    "fieldname": "expires_on",
    "fieldtype": "Datetime",
    "label": "Expires On"
   }
  ],
  "links": [],
- "modified": "2026-03-08 00:00:00.000000",
+ "modified": "2026-03-25 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Drive",
  "name": "Drive Share",

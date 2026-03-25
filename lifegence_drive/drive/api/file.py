@@ -1,3 +1,4 @@
+import hmac
 import os
 import mimetypes
 
@@ -10,6 +11,7 @@ from lifegence_drive.drive.services.storage_service import (
 	validate_file_size,
 )
 from lifegence_drive.drive.services.activity_service import log_activity
+from lifegence_drive.drive.services.permission_service import get_accessible_file_names
 
 
 @frappe.whitelist()
@@ -91,11 +93,16 @@ def download(name: str | None = None, share_link: str | None = None, password: s
 		if share.shared_doctype != "Drive File":
 			frappe.throw(_("Share link does not point to a file."))
 
-		# Password verification
-		if share.link_password:
+		# Password verification (check hash first, fall back to legacy)
+		password_hash = frappe.db.get_value("Drive Share", {"share_link": share_link}, "password_hash")
+		if password_hash or share.link_password:
 			if not password:
 				frappe.throw(_("This link requires a password. Add &password=xxx to the URL."), frappe.PermissionError)
-			if password != share.link_password:
+			if password_hash:
+				from werkzeug.security import check_password_hash
+				if not check_password_hash(password_hash, password):
+					frappe.throw(_("Incorrect password."), frappe.PermissionError)
+			elif not hmac.compare_digest(password.encode(), share.link_password.encode()):
 				frappe.throw(_("Incorrect password."), frappe.PermissionError)
 
 		name = share.shared_name
@@ -151,14 +158,20 @@ def preview_share(share_link: str | None = None, password: str | None = None):
 	if share.shared_doctype != "Drive File":
 		frappe.throw(_("Share link does not point to a file."))
 
-	has_password = bool(share.link_password)
+	password_hash = frappe.db.get_value("Drive Share", {"share_link": share_link}, "password_hash")
+	has_password = bool(share.link_password) or bool(password_hash)
 
 	# If password required, verify before showing info
 	if has_password and not password:
 		return {"requires_password": True}
 
-	if has_password and password != share.link_password:
-		frappe.throw(_("Incorrect password."), frappe.PermissionError)
+	if has_password:
+		if password_hash:
+			from werkzeug.security import check_password_hash
+			if not check_password_hash(password_hash, password):
+				frappe.throw(_("Incorrect password."), frappe.PermissionError)
+		elif not hmac.compare_digest(password.encode(), share.link_password.encode()):
+			frappe.throw(_("Incorrect password."), frappe.PermissionError)
 
 	file_data = frappe.db.get_value(
 		"Drive File", share.shared_name,
@@ -233,6 +246,20 @@ def get_files(folder: str | None = None, order_by: str = "modified desc", limit:
 	trashed = frappe.get_all("Drive Trash", filters={"original_doctype": "Drive File"}, pluck="original_name")
 	if trashed:
 		filters["name"] = ("not in", trashed)
+
+	# Permission filter: only show files the user can access
+	accessible = get_accessible_file_names()
+	if accessible is not None:
+		if "name" in filters:
+			# Combine with existing name filter (trashed)
+			existing = filters["name"]
+			if isinstance(existing, tuple) and existing[0] == "not in":
+				combined = set(existing[1])
+				all_names = set(frappe.get_all("Drive File", pluck="name"))
+				allowed = (all_names - combined) & accessible
+				filters["name"] = ("in", list(allowed))
+		else:
+			filters["name"] = ("in", list(accessible))
 
 	allowed_orders = {
 		"modified desc", "modified asc", "file_name asc", "file_name desc",
