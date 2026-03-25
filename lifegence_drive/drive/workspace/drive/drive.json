@@ -106,6 +106,12 @@
  "shortcuts": [
   {
    "color": "Blue",
+   "label": "Drive Browser",
+   "link_to": "drive-browser",
+   "type": "Page"
+  },
+  {
+   "color": "Blue",
    "doc_view": "List",
    "label": "Drive File",
    "link_to": "Drive File",

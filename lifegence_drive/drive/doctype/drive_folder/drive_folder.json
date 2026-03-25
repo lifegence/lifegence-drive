@@ -8,7 +8,12 @@
   "folder_name",
   "cb_folder",
   "parent_folder",
+  "is_group",
   "description",
+  "subfolders_section",
+  "subfolder_list_html",
+  "files_section",
+  "file_list_html",
   "settings_section",
   "is_private",
   "created_by",
@@ -35,9 +40,36 @@
    "options": "Drive Folder"
   },
   {
+   "default": "1",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Group"
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "fieldname": "subfolders_section",
+   "fieldtype": "Section Break",
+   "label": "Subfolders"
+  },
+  {
+   "fieldname": "subfolder_list_html",
+   "fieldtype": "HTML",
+   "label": "Subfolder List"
+  },
+  {
+   "fieldname": "files_section",
+   "fieldtype": "Section Break",
+   "label": "Files"
+  },
+  {
+   "fieldname": "file_list_html",
+   "fieldtype": "HTML",
+   "label": "File List"
   },
   {
    "fieldname": "settings_section",
@@ -105,6 +137,9 @@
    "write": 1
   }
  ],
+ "title_field": "folder_name",
+ "show_title_field_in_link": 1,
+ "default_view": "Tree",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
