@@ -26,6 +26,10 @@ scheduler_events = {
 	],
 }
 
+doctype_tree_js = {
+	"Drive Folder": "public/js/drive_folder_tree.js",
+}
+
 fixtures = [
 	"Drive Settings",
 ]

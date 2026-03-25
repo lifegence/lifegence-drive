@@ -107,6 +107,35 @@ def get_breadcrumb(folder: str):
 
 
 @frappe.whitelist()
+def get_tree_children(doctype=None, parent="", include_disabled=False, **filters):
+	"""Return folder children + files for the Tree View."""
+	# Get child folders (standard tree behavior)
+	from frappe.desk.treeview import _get_children
+	children = _get_children("Drive Folder", parent, include_disabled=include_disabled)
+
+	# Get files in this folder
+	folder_filter = parent if parent else ["in", ["", None]]
+	files = frappe.get_all(
+		"Drive File",
+		filters={"folder": folder_filter},
+		fields=["name", "file_name", "file_size", "extension", "mime_type"],
+		order_by="file_name asc",
+		limit_page_length=200,
+	)
+
+	for f in files:
+		children.append({
+			"value": f"file:{f.name}",
+			"title": f.file_name,
+			"expandable": 0,
+			"is_file": 1,
+			"file_name": f.name,
+		})
+
+	return children
+
+
+@frappe.whitelist()
 def get_contents(folder: str | None = None, order_by: str = "modified desc", limit: int = 50, start: int = 0):
 	"""List both folders and files in a given folder, folders first."""
 	from lifegence_drive.drive.api.file import get_files
