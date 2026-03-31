@@ -1,4 +1,3 @@
-import hmac
 import os
 import mimetypes
 
@@ -11,7 +10,8 @@ from lifegence_drive.drive.services.storage_service import (
 	validate_file_size,
 )
 from lifegence_drive.drive.services.activity_service import log_activity
-from lifegence_drive.drive.services.permission_service import get_accessible_file_names
+from lifegence_drive.drive.services.permission_service import check_manage_permission, get_accessible_file_names
+from lifegence_drive.drive.utils import verify_share_password
 
 
 @frappe.whitelist()
@@ -98,11 +98,7 @@ def download(name: str | None = None, share_link: str | None = None, password: s
 		if password_hash or share.link_password:
 			if not password:
 				frappe.throw(_("This link requires a password. Add &password=xxx to the URL."), frappe.PermissionError)
-			if password_hash:
-				from werkzeug.security import check_password_hash
-				if not check_password_hash(password_hash, password):
-					frappe.throw(_("Incorrect password."), frappe.PermissionError)
-			elif not hmac.compare_digest(password.encode(), share.link_password.encode()):
+			if not verify_share_password(password, password_hash, share.link_password):
 				frappe.throw(_("Incorrect password."), frappe.PermissionError)
 
 		name = share.shared_name
@@ -166,11 +162,7 @@ def preview_share(share_link: str | None = None, password: str | None = None):
 		return {"requires_password": True}
 
 	if has_password:
-		if password_hash:
-			from werkzeug.security import check_password_hash
-			if not check_password_hash(password_hash, password):
-				frappe.throw(_("Incorrect password."), frappe.PermissionError)
-		elif not hmac.compare_digest(password.encode(), share.link_password.encode()):
+		if not verify_share_password(password, password_hash, share.link_password):
 			frappe.throw(_("Incorrect password."), frappe.PermissionError)
 
 	file_data = frappe.db.get_value(
@@ -203,6 +195,8 @@ def _read_file_content(file_url: str) -> bytes:
 @frappe.whitelist()
 def rename(name: str, new_name: str):
 	"""Rename a Drive File."""
+	check_manage_permission("Drive File", name)
+
 	drive_file = frappe.get_doc("Drive File", name)
 	old_name = drive_file.file_name
 	drive_file.file_name = frappe.utils.escape_html(new_name)
@@ -216,6 +210,8 @@ def rename(name: str, new_name: str):
 @frappe.whitelist()
 def move(name: str, target_folder: str | None = None):
 	"""Move a Drive File to another folder."""
+	check_manage_permission("Drive File", name)
+
 	drive_file = frappe.get_doc("Drive File", name)
 	old_folder = drive_file.folder
 

@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 
 from lifegence_drive.drive.services.activity_service import log_activity
+from lifegence_drive.drive.services.permission_service import check_manage_permission
 
 
 @frappe.whitelist()
@@ -27,6 +28,8 @@ def create(folder_name: str, parent_folder: str | None = None, is_private: int =
 @frappe.whitelist()
 def rename(name: str, new_name: str):
 	"""Rename a Drive Folder."""
+	check_manage_permission("Drive Folder", name)
+
 	folder = frappe.get_doc("Drive Folder", name)
 	old_name = folder.folder_name
 	folder.folder_name = frappe.utils.escape_html(new_name)
@@ -40,6 +43,8 @@ def rename(name: str, new_name: str):
 @frappe.whitelist()
 def move(name: str, target_parent: str | None = None):
 	"""Move a Drive Folder to another parent folder."""
+	check_manage_permission("Drive Folder", name)
+
 	folder = frappe.get_doc("Drive Folder", name)
 	old_parent = folder.parent_folder
 

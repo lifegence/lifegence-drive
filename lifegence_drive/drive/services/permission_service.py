@@ -42,3 +42,42 @@ def can_view_file(user: str | None, name: str) -> bool:
         "shared_doctype": "Drive File",
         "shared_name": name,
     })
+
+
+def can_manage_folder(user: str | None, name: str) -> bool:
+    user = user or frappe.session.user
+    if user == "Administrator":
+        return True
+    creator = frappe.db.get_value("Drive Folder", name, "created_by")
+    return creator == user
+
+
+def can_view_folder(user: str | None, name: str) -> bool:
+    user = user or frappe.session.user
+    if user == "Administrator":
+        return True
+    if can_manage_folder(user, name):
+        return True
+    return frappe.db.exists("Drive Share", {"shared_with": user, "shared_doctype": "Drive Folder", "shared_name": name})
+
+
+def check_manage_permission(doctype: str, name: str, user: str | None = None):
+    from frappe import _
+    user = user or frappe.session.user
+    if doctype == "Drive File":
+        if not can_manage_file(user, name):
+            frappe.throw(_("You don't have permission to modify this file."), frappe.PermissionError)
+    elif doctype == "Drive Folder":
+        if not can_manage_folder(user, name):
+            frappe.throw(_("You don't have permission to modify this folder."), frappe.PermissionError)
+
+
+def check_view_permission(doctype: str, name: str, user: str | None = None):
+    from frappe import _
+    user = user or frappe.session.user
+    if doctype == "Drive File":
+        if not can_view_file(user, name):
+            frappe.throw(_("You don't have permission to view this file."), frappe.PermissionError)
+    elif doctype == "Drive Folder":
+        if not can_view_folder(user, name):
+            frappe.throw(_("You don't have permission to view this folder."), frappe.PermissionError)

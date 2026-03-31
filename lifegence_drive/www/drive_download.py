@@ -1,6 +1,8 @@
 import frappe
 from frappe import _
 
+from lifegence_drive.drive.utils import verify_share_password
+
 
 def get_context(context):
 	"""Landing page for shared Drive file downloads.
@@ -62,7 +64,7 @@ def get_context(context):
 
 	if context.has_password:
 		if password:
-			if _verify_password(password, password_hash, share.link_password):
+			if verify_share_password(password, password_hash, share.link_password):
 				context.download_url = download_url + f"&password={frappe.utils.escape_html(password)}"
 				context.authenticated = True
 			else:
@@ -86,16 +88,3 @@ def format_bytes(size):
 		size /= 1024
 		i += 1
 	return f"{size:.1f} {units[i]}" if i > 0 else f"{size} {units[i]}"
-
-
-def _verify_password(password, password_hash, legacy_password):
-	"""Verify password against hash (preferred) or legacy plaintext with timing-safe comparison."""
-	if not password:
-		return False
-	if password_hash:
-		from werkzeug.security import check_password_hash
-		return check_password_hash(password_hash, password)
-	if legacy_password:
-		import hmac
-		return hmac.compare_digest(password.encode(), legacy_password.encode())
-	return False

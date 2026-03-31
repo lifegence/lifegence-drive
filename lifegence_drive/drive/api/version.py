@@ -10,6 +10,7 @@ from lifegence_drive.drive.services.storage_service import (
 	validate_file_size,
 )
 from lifegence_drive.drive.services.activity_service import log_activity
+from lifegence_drive.drive.services.permission_service import check_manage_permission, check_view_permission
 
 
 @frappe.whitelist()
@@ -19,6 +20,8 @@ def upload_new_version(name: str, comment: str = ""):
 	Saves the current version as a Drive File Version record,
 	then replaces the file with the new upload.
 	"""
+	check_manage_permission("Drive File", name)
+
 	files = frappe.request.files
 	if not files or "file" not in files:
 		frappe.throw(_("No file uploaded."))
@@ -110,6 +113,8 @@ def get_versions(name: str):
 @frappe.whitelist()
 def restore_version(name: str, version_name: str):
 	"""Restore a Drive File to a previous version."""
+	check_manage_permission("Drive File", name)
+
 	drive_file = frappe.get_doc("Drive File", name)
 	version = frappe.get_doc("Drive File Version", version_name)
 
@@ -143,6 +148,8 @@ def restore_version(name: str, version_name: str):
 def download_version(version_name: str):
 	"""Download a specific version of a file."""
 	version = frappe.get_doc("Drive File Version", version_name)
+	check_view_permission("Drive File", version.drive_file)
+
 	drive_file = frappe.get_doc("Drive File", version.drive_file)
 
 	file_url = version.file_url

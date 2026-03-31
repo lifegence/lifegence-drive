@@ -132,28 +132,41 @@ def get_shared_with_me():
 		order_by="creation desc",
 	)
 
+	# Collect names by doctype for batch fetching
+	file_names = [s.shared_name for s in shares if s.shared_doctype == "Drive File"]
+	folder_names = [s.shared_name for s in shares if s.shared_doctype == "Drive Folder"]
+
+	# Batch-fetch file details
+	file_map = {}
+	if file_names:
+		for row in frappe.get_all(
+			"Drive File",
+			filters={"name": ["in", file_names]},
+			fields=["name", "file_name", "file_url", "file_size", "mime_type", "extension",
+					"uploaded_by", "modified"],
+		):
+			file_map[row.name] = row
+
+	# Batch-fetch folder details
+	folder_map = {}
+	if folder_names:
+		for row in frappe.get_all(
+			"Drive Folder",
+			filters={"name": ["in", folder_names]},
+			fields=["name", "folder_name", "created_by", "modified"],
+		):
+			folder_map[row.name] = row
+
 	result = []
 	for share in shares:
-		if not frappe.db.exists(share.shared_doctype, share.shared_name):
-			continue
-
 		if share.shared_doctype == "Drive File":
-			item = frappe.db.get_value(
-				"Drive File", share.shared_name,
-				["name", "file_name", "file_url", "file_size", "mime_type", "extension",
-				 "uploaded_by", "modified"],
-				as_dict=True,
-			)
+			item = file_map.get(share.shared_name)
 			if item:
 				item["_type"] = "file"
 				item["permission_level"] = share.permission_level
 				result.append(item)
 		elif share.shared_doctype == "Drive Folder":
-			item = frappe.db.get_value(
-				"Drive Folder", share.shared_name,
-				["name", "folder_name", "created_by", "modified"],
-				as_dict=True,
-			)
+			item = folder_map.get(share.shared_name)
 			if item:
 				item["_type"] = "folder"
 				item["permission_level"] = share.permission_level

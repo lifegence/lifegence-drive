@@ -3,6 +3,7 @@ from frappe import _
 from frappe.utils import add_days, nowdate
 
 from lifegence_drive.drive.services.activity_service import log_activity
+from lifegence_drive.drive.services.permission_service import check_manage_permission
 
 
 @frappe.whitelist()
@@ -16,6 +17,8 @@ def move_to_trash(doctype: str, name: str):
 
 	if frappe.db.exists("Drive Trash", {"original_doctype": doctype, "original_name": name}):
 		frappe.throw(_("Item is already in trash."))
+
+	check_manage_permission(doctype, name)
 
 	settings = frappe.get_single("Drive Settings")
 	original_folder = ""
@@ -41,6 +44,7 @@ def move_to_trash(doctype: str, name: str):
 def restore(trash_name: str):
 	"""Restore a trashed item."""
 	trash = frappe.get_doc("Drive Trash", trash_name)
+	check_manage_permission(trash.original_doctype, trash.original_name)
 
 	if not frappe.db.exists(trash.original_doctype, trash.original_name):
 		frappe.throw(_("Original item no longer exists and cannot be restored."))
@@ -61,6 +65,7 @@ def restore(trash_name: str):
 def delete_permanently(trash_name: str):
 	"""Permanently delete a trashed item."""
 	trash = frappe.get_doc("Drive Trash", trash_name)
+	check_manage_permission(trash.original_doctype, trash.original_name)
 
 	# Delete the original document if it exists
 	if frappe.db.exists(trash.original_doctype, trash.original_name):
@@ -91,20 +96,39 @@ def get_trash(limit: int = 50, start: int = 0):
 		limit_start=start,
 	)
 
+	# Collect names by doctype for batch fetching
+	file_names = [i.original_name for i in items if i.original_doctype == "Drive File"]
+	folder_names = [i.original_name for i in items if i.original_doctype == "Drive Folder"]
+
+	# Batch-fetch file details
+	file_map = {}
+	if file_names:
+		for row in frappe.get_all(
+			"Drive File",
+			filters={"name": ["in", file_names]},
+			fields=["name", "file_name", "file_size", "mime_type", "extension"],
+		):
+			file_map[row.name] = row
+
+	# Batch-fetch folder details
+	folder_map = {}
+	if folder_names:
+		for row in frappe.get_all(
+			"Drive Folder",
+			filters={"name": ["in", folder_names]},
+			fields=["name", "folder_name"],
+		):
+			folder_map[row.name] = row
+
 	# Enrich with original document details
 	for item in items:
-		if frappe.db.exists(item.original_doctype, item.original_name):
-			if item.original_doctype == "Drive File":
-				item.update(frappe.db.get_value(
-					"Drive File", item.original_name,
-					["file_name", "file_size", "mime_type", "extension"],
-					as_dict=True,
-				) or {})
-			elif item.original_doctype == "Drive Folder":
-				item.update(frappe.db.get_value(
-					"Drive Folder", item.original_name,
-					["folder_name"],
-					as_dict=True,
-				) or {})
+		if item.original_doctype == "Drive File":
+			details = file_map.get(item.original_name)
+			if details:
+				item.update(details)
+		elif item.original_doctype == "Drive Folder":
+			details = folder_map.get(item.original_name)
+			if details:
+				item.update(details)
 
 	return items
