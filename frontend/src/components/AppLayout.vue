@@ -1,0 +1,25 @@
+<template>
+  <div class="flex h-screen bg-gray-50 text-gray-900">
+    <Sidebar />
+    <div class="flex-1 flex flex-col min-w-0">
+      <Topbar />
+      <Breadcrumb :crumbs="crumbs" />
+      <main class="flex-1 overflow-auto">
+        <slot />
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import Sidebar from "@/components/Sidebar.vue"
+import Topbar from "@/components/Topbar.vue"
+import Breadcrumb from "@/components/Breadcrumb.vue"
+
+defineProps({
+  crumbs: {
+    type: Array,
+    default: () => [],
+  },
+})
+</script>
