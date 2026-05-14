@@ -46,7 +46,7 @@
             </template>
             <template v-else-if="item.kind === 'folder' && item.item_count != null">
               <span :class="item.item_count === 0 ? 'text-gray-400' : 'text-gray-600'">
-                {{ item.item_count === 0 ? "空" : `${item.item_count} 件` }}
+                {{ item.item_count === 0 ? t("common.empty") : `${item.item_count} ${t("common.items")}` }}
               </span>
             </template>
             <template v-else>
@@ -64,6 +64,9 @@
 
 <script setup>
 import FileTypeIcon from "@/components/FileTypeIcon.vue"
+import { useI18n } from "@/composables/useI18n"
+
+const { t } = useI18n()
 
 defineProps({
   items: { type: Array, required: true },

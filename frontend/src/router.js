@@ -1,54 +1,55 @@
 import { createRouter, createWebHistory } from "vue-router"
+import { useI18n } from "@/composables/useI18n"
 
 const routes = [
   {
     path: "/",
     name: "MyFiles",
     component: () => import("@/views/MyFiles.vue"),
-    meta: { title: "マイファイル" },
+    meta: { titleKey: "view.myFiles" },
   },
   {
     path: "/folder/:id",
     name: "Folder",
     component: () => import("@/views/Folder.vue"),
     props: true,
-    meta: { title: "フォルダ" },
+    meta: { titleKey: "view.folder" },
   },
   {
     path: "/shared",
     name: "Shared",
     component: () => import("@/views/Shared.vue"),
-    meta: { title: "共有" },
+    meta: { titleKey: "view.shared" },
   },
   {
     path: "/favorites",
     name: "Favorites",
     component: () => import("@/views/Favorites.vue"),
-    meta: { title: "お気に入り" },
+    meta: { titleKey: "view.favorites" },
   },
   {
     path: "/recents",
     name: "Recents",
     component: () => import("@/views/Recents.vue"),
-    meta: { title: "最近" },
+    meta: { titleKey: "view.recents" },
   },
   {
     path: "/trash",
     name: "Trash",
     component: () => import("@/views/Trash.vue"),
-    meta: { title: "ゴミ箱" },
+    meta: { titleKey: "view.trash" },
   },
   {
     path: "/search",
     name: "Search",
     component: () => import("@/views/Search.vue"),
-    meta: { title: "検索" },
+    meta: { titleKey: "view.search" },
   },
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/views/NotFound.vue"),
-    meta: { title: "404" },
+    meta: { titleKey: "view.notFound" },
   },
 ]
 
@@ -68,17 +69,11 @@ function getCookie(name) {
 }
 
 function isGuest() {
-  // Frappe sets a non-HttpOnly `user_id` cookie on every response, equal
-  // to the email of the logged-in user or "Guest" for anonymous sessions.
-  // jinjaBootData does not inject window.frappe.boot.user, so the cookie
-  // is the reliable client-side source of truth.
   const userId = getCookie("user_id")
   return !userId || userId === "Guest"
 }
 
 router.beforeEach((to, _from, next) => {
-  // Routes with meta.allowGuest are reachable without a Frappe session
-  // (e.g. future shared-link landing pages backed by allow_guest=True APIs).
   if (to.meta.allowGuest) {
     return next()
   }
@@ -90,9 +85,14 @@ router.beforeEach((to, _from, next) => {
   next()
 })
 
-router.afterEach((to) => {
-  const base = "Lifegence Drive"
-  document.title = to.meta.title ? `${to.meta.title} | ${base}` : base
-})
+function refreshDocumentTitle(route) {
+  const { t } = useI18n()
+  const base = t("app.title")
+  const key = route?.meta?.titleKey
+  document.title = key ? `${t(key)} | ${base}` : base
+}
 
+router.afterEach((to) => refreshDocumentTitle(to))
+
+export { refreshDocumentTitle }
 export default router

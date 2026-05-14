@@ -38,7 +38,7 @@
         class="text-[10px] mt-0.5"
         :class="item.item_count === 0 ? 'text-gray-400' : 'text-gray-500'"
       >
-        {{ item.item_count === 0 ? "空" : `${item.item_count} 件` }}
+        {{ item.item_count === 0 ? t("common.empty") : `${item.item_count} ${t("common.items")}` }}
       </div>
     </button>
   </div>
@@ -46,6 +46,9 @@
 
 <script setup>
 import FileTypeIcon from "@/components/FileTypeIcon.vue"
+import { useI18n } from "@/composables/useI18n"
+
+const { t } = useI18n()
 
 defineProps({
   items: { type: Array, required: true },

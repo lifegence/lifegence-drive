@@ -1,10 +1,10 @@
 <template>
   <ItemBrowser
-    title="お気に入り"
+    :title="t('view.favorites')"
     :items="items"
     :loading="resource.loading"
     :error="resource.error"
-    empty-text="お気に入りはありません。"
+    :empty-text="t('empty.favorites')"
     @open="actions.open"
     @context="(event, item) => actions.showFor(event, item, 'default')"
   />
@@ -17,7 +17,9 @@ import ItemBrowser from "@/components/ItemBrowser.vue"
 import { normalizeFromTypeField } from "@/composables/normalizeItem"
 import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore } from "@/store"
+import { useI18n } from "@/composables/useI18n"
 
+const { t } = useI18n()
 const breadcrumbStore = useBreadcrumbStore()
 onMounted(() => breadcrumbStore.reset())
 

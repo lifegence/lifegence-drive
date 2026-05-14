@@ -18,8 +18,14 @@ const locale = ref(detectInitialLocale())
 export function useI18n() {
   const current = computed(() => messages[locale.value] || messages.ja)
 
-  function t(key) {
-    return current.value[key] ?? key
+  function t(key, params) {
+    let s = current.value[key] ?? key
+    if (params && typeof s === "string") {
+      for (const [k, v] of Object.entries(params)) {
+        s = s.replace(new RegExp(`\\{${k}\\}`, "g"), v)
+      }
+    }
+    return s
   }
 
   function setLocale(l) {

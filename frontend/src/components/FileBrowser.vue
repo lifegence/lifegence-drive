@@ -5,7 +5,7 @@
       :items="items"
       :loading="contents.loading"
       :error="contents.error"
-      empty-text="このフォルダは空です。ファイルをドラッグ&ドロップしてください。"
+      :empty-text="t('empty.folder')"
       @open="onOpen"
       @context="onContext"
     >
@@ -16,7 +16,7 @@
           @click="fileInput?.click()"
         >
           <Upload :size="14" />
-          アップロード
+          {{ t("common.upload") }}
         </button>
         <input
           ref="fileInput"
@@ -44,10 +44,13 @@ import { useBreadcrumbStore } from "@/store"
 import { useItemActions } from "@/composables/useItemActions"
 import { useFileUpload } from "@/composables/useFileUpload"
 import { useThumbnails } from "@/composables/useThumbnails"
+import { useI18n } from "@/composables/useI18n"
+
+const { t } = useI18n()
 
 const props = defineProps({
   folderId: { type: String, default: null },
-  title: { type: String, default: "マイファイル" },
+  title: { type: String, default: "" },
 })
 
 const breadcrumbStore = useBreadcrumbStore()

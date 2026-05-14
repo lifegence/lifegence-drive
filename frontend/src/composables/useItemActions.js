@@ -14,11 +14,13 @@ import { useRouter } from "vue-router"
 import { useContextMenu } from "@/composables/useContextMenu"
 import { useDialogs } from "@/composables/useDialogs"
 import { isPreviewable } from "@/composables/previewKind"
+import { useI18n } from "@/composables/useI18n"
 
 export function useItemActions({ onReload }) {
   const router = useRouter()
   const ctx = useContextMenu()
   const dialogs = useDialogs()
+  const { t } = useI18n()
 
   function open(item) {
     if (item.kind === "folder") {
@@ -107,19 +109,19 @@ export function useItemActions({ onReload }) {
   function showFor(event, item, mode = "default") {
     const items = []
     if (mode === "trash") {
-      items.push({ label: "復元", icon: RotateCcw, onClick: () => restore(item) })
-      items.push({ label: "完全削除", icon: X, danger: true, onClick: () => deletePermanently(item) })
+      items.push({ label: t("action.restore"), icon: RotateCcw, onClick: () => restore(item) })
+      items.push({ label: t("action.deletePermanently"), icon: X, danger: true, onClick: () => deletePermanently(item) })
     } else {
-      items.push({ label: "開く", icon: Eye, onClick: () => open(item) })
+      items.push({ label: t("action.open"), icon: Eye, onClick: () => open(item) })
       if (item.kind === "file" && item.file_url) {
-        items.push({ label: "ダウンロード", icon: Download, onClick: () => download(item) })
+        items.push({ label: t("action.download"), icon: Download, onClick: () => download(item) })
       }
-      items.push({ label: "お気に入り", icon: Star, onClick: () => toggleFavorite(item) })
-      items.push({ label: "名前を変更", icon: Pencil, onClick: () => rename(item) })
-      items.push({ label: "移動", icon: FolderInput, onClick: () => dialogs.openMove(item, onReload) })
-      items.push({ label: "共有", icon: Share2, onClick: () => dialogs.openShare(item, onReload) })
+      items.push({ label: t("action.favorite"), icon: Star, onClick: () => toggleFavorite(item) })
+      items.push({ label: t("action.rename"), icon: Pencil, onClick: () => rename(item) })
+      items.push({ label: t("action.move"), icon: FolderInput, onClick: () => dialogs.openMove(item, onReload) })
+      items.push({ label: t("action.share"), icon: Share2, onClick: () => dialogs.openShare(item, onReload) })
       items.push({ separator: true })
-      items.push({ label: "ゴミ箱へ移動", icon: Trash2, danger: true, onClick: () => moveToTrash(item) })
+      items.push({ label: t("action.moveToTrash"), icon: Trash2, danger: true, onClick: () => moveToTrash(item) })
     }
     ctx.show(event, items)
   }

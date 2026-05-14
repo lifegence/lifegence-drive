@@ -1,10 +1,10 @@
 <template>
   <ItemBrowser
-    title="ゴミ箱"
+    :title="t('view.trash')"
     :items="items"
     :loading="resource.loading"
     :error="resource.error"
-    empty-text="ゴミ箱は空です。"
+    :empty-text="t('empty.trash')"
     @context="(event, item) => actions.showFor(event, item, 'trash')"
   />
 </template>
@@ -16,7 +16,9 @@ import ItemBrowser from "@/components/ItemBrowser.vue"
 import { normalizeFromTrash } from "@/composables/normalizeItem"
 import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore } from "@/store"
+import { useI18n } from "@/composables/useI18n"
 
+const { t } = useI18n()
 const breadcrumbStore = useBreadcrumbStore()
 onMounted(() => breadcrumbStore.reset())
 

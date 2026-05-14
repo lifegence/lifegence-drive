@@ -1,10 +1,10 @@
 <template>
   <ItemBrowser
-    title="最近"
+    :title="t('view.recents')"
     :items="items"
     :loading="resource.loading"
     :error="resource.error"
-    empty-text="最近のファイルはありません。"
+    :empty-text="t('empty.recents')"
     @open="actions.open"
     @context="(event, item) => actions.showFor(event, item, 'default')"
   />
@@ -16,7 +16,9 @@ import { createResource } from "frappe-ui"
 import ItemBrowser from "@/components/ItemBrowser.vue"
 import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore } from "@/store"
+import { useI18n } from "@/composables/useI18n"
 
+const { t } = useI18n()
 const breadcrumbStore = useBreadcrumbStore()
 onMounted(() => breadcrumbStore.reset())
 

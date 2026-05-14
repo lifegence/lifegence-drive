@@ -11,7 +11,7 @@
       v-if="resource.loading && !resource.data"
       class="p-6 text-sm text-gray-500"
     >
-      読み込み中…
+      {{ t("common.loading") }}
     </div>
     <ErrorMessage
       v-else-if="resource.error"
@@ -22,13 +22,13 @@
       v-else-if="!query"
       class="p-12 text-center text-sm text-gray-500"
     >
-      上の検索バーに語句を入力してください。
+      {{ t("search.askInput") }}
     </div>
     <div
       v-else-if="emptyAll"
       class="p-12 text-center text-sm text-gray-500"
     >
-      一致する項目はありません。
+      {{ t("search.empty") }}
     </div>
     <template v-else>
       <!-- Folders -->
@@ -37,7 +37,7 @@
         class="border-b border-gray-100"
       >
         <div class="px-4 pt-3 pb-1 text-xs uppercase tracking-wider text-gray-500 font-medium">
-          フォルダ ({{ folderItems.length }})
+          {{ t("search.foldersSection") }} ({{ folderItems.length }})
         </div>
         <FileGrid
           v-if="viewStore.mode === 'grid'"
@@ -56,7 +56,7 @@
       <!-- Files -->
       <section v-if="fileItems.length > 0">
         <div class="px-4 pt-3 pb-1 text-xs uppercase tracking-wider text-gray-500 font-medium">
-          ファイル ({{ fileItems.length }})
+          {{ t("search.filesSection") }} ({{ fileItems.length }})
         </div>
         <ul class="divide-y divide-gray-100">
           <li
@@ -85,7 +85,7 @@
                   class="hover:text-blue-600 hover:underline"
                   @click.stop="openFolder(item.folder)"
                 >
-                  {{ item.folder_name || "ルート" }}
+                  {{ item.folder_name || t("search.parentRoot") }}
                 </button>
                 <span
                   v-if="item.folder"
@@ -119,7 +119,9 @@ import FileTypeIcon from "@/components/FileTypeIcon.vue"
 import ViewToggle from "@/components/ViewToggle.vue"
 import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore, useViewStore } from "@/store"
+import { useI18n } from "@/composables/useI18n"
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const breadcrumbStore = useBreadcrumbStore()
@@ -142,7 +144,9 @@ watch(query, (q) => {
   if (q) resource.reload()
 })
 
-const title = computed(() => (query.value ? `検索: "${query.value}"` : "検索"))
+const title = computed(() =>
+  query.value ? t("search.title", { q: query.value }) : t("view.search"),
+)
 
 const folderItems = computed(() =>
   (resource.data?.folders || []).map((r) => ({
