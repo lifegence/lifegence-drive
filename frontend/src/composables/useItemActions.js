@@ -5,15 +5,18 @@ import {
   Trash2,
   Download,
   RotateCcw,
+  Share2,
   X,
 } from "lucide-vue-next"
 import { call } from "frappe-ui"
 import { useRouter } from "vue-router"
 import { useContextMenu } from "@/composables/useContextMenu"
+import { useDialogs } from "@/composables/useDialogs"
 
 export function useItemActions({ onReload }) {
   const router = useRouter()
   const ctx = useContextMenu()
+  const dialogs = useDialogs()
 
   function open(item) {
     if (item.kind === "folder") {
@@ -105,6 +108,7 @@ export function useItemActions({ onReload }) {
       }
       items.push({ label: "お気に入り", icon: Star, onClick: () => toggleFavorite(item) })
       items.push({ label: "名前を変更", icon: Pencil, onClick: () => rename(item) })
+      items.push({ label: "共有", icon: Share2, onClick: () => dialogs.openShare(item, onReload) })
       items.push({ separator: true })
       items.push({ label: "ゴミ箱へ移動", icon: Trash2, danger: true, onClick: () => moveToTrash(item) })
     }
