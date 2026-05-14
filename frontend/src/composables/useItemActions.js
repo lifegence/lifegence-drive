@@ -13,6 +13,7 @@ import { call } from "frappe-ui"
 import { useRouter } from "vue-router"
 import { useContextMenu } from "@/composables/useContextMenu"
 import { useDialogs } from "@/composables/useDialogs"
+import { isPreviewable } from "@/composables/previewKind"
 
 export function useItemActions({ onReload }) {
   const router = useRouter()
@@ -22,7 +23,13 @@ export function useItemActions({ onReload }) {
   function open(item) {
     if (item.kind === "folder") {
       router.push(`/folder/${item.id}`)
-    } else if (item.file_url) {
+      return
+    }
+    if (isPreviewable(item)) {
+      dialogs.openPreview(item)
+      return
+    }
+    if (item.file_url) {
       window.open(item.file_url, "_blank", "noopener")
     }
   }
