@@ -1,21 +1,48 @@
 <template>
-  <ItemBrowser
-    :title="title"
-    :items="items"
-    :loading="contents.loading"
-    :error="contents.error"
-    empty-text="このフォルダは空です。"
-    @open="onOpen"
-    @context="onContext"
-  />
+  <div class="relative h-full">
+    <ItemBrowser
+      :title="title"
+      :items="items"
+      :loading="contents.loading"
+      :error="contents.error"
+      empty-text="このフォルダは空です。ファイルをドラッグ&ドロップしてください。"
+      @open="onOpen"
+      @context="onContext"
+    >
+      <template #actions>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 px-2 py-1 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50"
+          @click="fileInput?.click()"
+        >
+          <Upload :size="14" />
+          アップロード
+        </button>
+        <input
+          ref="fileInput"
+          type="file"
+          multiple
+          class="hidden"
+          @change="onPick"
+        >
+      </template>
+    </ItemBrowser>
+    <DropZone
+      :folder-id="folderId"
+      @uploaded="contents.reload()"
+    />
+  </div>
 </template>
 
 <script setup>
-import { computed, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import { createResource } from "frappe-ui"
+import { Upload } from "lucide-vue-next"
 import ItemBrowser from "@/components/ItemBrowser.vue"
+import DropZone from "@/components/DropZone.vue"
 import { useBreadcrumbStore } from "@/store"
 import { useItemActions } from "@/composables/useItemActions"
+import { useFileUpload } from "@/composables/useFileUpload"
 
 const props = defineProps({
   folderId: { type: String, default: null },
@@ -40,6 +67,8 @@ watch(
 )
 
 const actions = useItemActions({ onReload: () => contents.reload() })
+const upload = useFileUpload()
+const fileInput = ref(null)
 
 const items = computed(() => {
   const data = contents.data
@@ -72,5 +101,12 @@ function onOpen(item) {
 
 function onContext(event, item) {
   actions.showFor(event, item, "default")
+}
+
+async function onPick(event) {
+  const files = event.target.files
+  if (!files || files.length === 0) return
+  await upload.addFiles(files, props.folderId, () => contents.reload())
+  if (fileInput.value) fileInput.value.value = ""
 }
 </script>

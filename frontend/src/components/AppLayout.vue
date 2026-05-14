@@ -9,6 +9,7 @@
       </main>
     </div>
     <ContextMenu />
+    <UploadQueue />
   </div>
 </template>
 
@@ -17,6 +18,7 @@ import Sidebar from "@/components/Sidebar.vue"
 import Topbar from "@/components/Topbar.vue"
 import Breadcrumb from "@/components/Breadcrumb.vue"
 import ContextMenu from "@/components/ContextMenu.vue"
+import UploadQueue from "@/components/UploadQueue.vue"
 import { useBreadcrumbStore } from "@/store"
 
 const breadcrumbStore = useBreadcrumbStore()

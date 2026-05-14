@@ -4,7 +4,10 @@
       <h1 class="text-xl font-semibold">
         {{ title }}
       </h1>
-      <ViewToggle />
+      <div class="flex items-center gap-2">
+        <slot name="actions" />
+        <ViewToggle />
+      </div>
     </div>
 
     <div
