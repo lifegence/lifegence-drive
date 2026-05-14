@@ -4,4 +4,6 @@ export const KNOWN_UNCOVERED_APIS = new Set<string>([
   'lifegence_drive.drive.api.files.upload_file',
   'lifegence_drive.drive.api.files.download_file',
 ]);
-export const KNOWN_DIRECT_ENTRY_PAGES = new Set<string>([]);
+export const KNOWN_DIRECT_ENTRY_PAGES = new Set<string>([
+  '/drive_download', // REASON: share-link landing (/drive-download?share_link=...), guest_pages
+]);
