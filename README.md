@@ -2,7 +2,10 @@
 
 > File sharing app for [Frappe Framework](https://frappeframework.com/) v16+
 
-**Lifegence Drive** はフォルダ管理、共有リンク、バージョン管理、検索、AI スキャナーとの連携を備えた軽量ファイル共有アプリです。Frappe の標準機能のみで動作し、ERPNext は不要です。ユーザー向け UI は Vue 3 + frappe-ui で構築されたモダンな SPA(`/drive_app`)を提供します。
+**Lifegence Drive** is a lightweight file-sharing application with folder
+management, share links, version history, search, and a modern Vue 3
+SPA UI. It runs on stock Frappe Framework and does not depend on
+ERPNext.
 
 ---
 
@@ -10,69 +13,88 @@
 
 ### Modern Vue 3 SPA — `/drive_app`
 
-Single entry point for end users. Mounted by `bench build`, served as a
-Frappe website route, fully responsive (drawer sidebar on phones,
-permanent sidebar on tablet / desktop).
+The user-facing UI. Built independently with Vue 3 + Vite +
+[frappe-ui](https://github.com/frappe/frappe-ui) (MIT) + Tailwind, and
+served as a Frappe website route. Fully responsive — drawer sidebar
+on phones, persistent sidebar on tablet / desktop.
 
-- マイファイル / 共有 / お気に入り / 最近 / ゴミ箱 の 5 ビュー
-- フォルダ navigation + breadcrumb + 同名フォルダ判別用の ID 併記
-- Grid / List の切替(`localStorage` で永続化)
-- 右クリック ContextMenu(開く / ダウンロード / お気に入り / 名前変更 / 移動 / 共有 / ゴミ箱)
-- ドラッグ & ドロップアップロード(parallel 3、進捗 toast、エラー surfacing)
-- ShareDialog:ユーザ共有(View / Edit / Manage)+ パスワード付き共有リンク + 期限
-- MoveDialog:フォルダツリー(lazy expand)+ ルートへの移動
-- FilePreview:画像 / PDF / 動画 / 音声 / テキスト(UTF-8 256KB cap)を Modal で
-- 検索:Topbar から live、フォルダ + ファイル両方ヒット、各ヒットに親フォルダ表示
-- サムネイル:画像 + PDF(pypdfium2 で 1 ページ目)を Grid / List に表示
-- 日本語 / 英語の i18n(`localStorage` で永続化)
-- 認証ガード:未認証は `/login?redirect-to=...` に自動リダイレクト
+- **5 main views**: My Files, Shared, Favorites, Recents, Trash
+- **Folder navigation** with breadcrumbs; folder ID is shown beside
+  the name so same-name folders are distinguishable
+- **Grid / List view toggle** (persisted in `localStorage`)
+- **Right-click context menu**: Open, Download, Favorite, Rename, Move,
+  Share, Move-to-trash (Restore + Delete-permanently in the Trash view)
+- **Drag-and-drop upload** with parallel limit 3, progress toast,
+  and per-file error surfacing
+- **Share dialog**: per-user shares (View / Edit / Manage) and
+  shareable links with optional password and expiration date
+- **Move dialog**: lazy-expanding folder tree, plus a "move to root"
+  shortcut
+- **File preview** in a modal: images, PDF, video, audio, plain text
+  (UTF-8, first 256 KB)
+- **Live search** from the top bar — hits cover both folders *and*
+  files; each file result links back to its parent folder
+- **Thumbnails** for images and PDFs (first page rendered via
+  pypdfium2) shown inline in Grid / List
+- **i18n** (Japanese / English) toggled at runtime; choice is
+  persisted in `localStorage`
+- **Auth guard** — unauthenticated visits redirect to
+  `/login?redirect-to=...`
 
 ### File Management
 - Multipart upload via API
 - Folder hierarchy (unlimited nesting via Nested Set)
-- File rename, move, copy
+- File rename and move
 - Soft-delete trash with configurable auto-purge (default: 30 days)
 
 ### Sharing
-- Share with users — View / Edit / Manage permissions
-- Shareable link with optional password and expiration
-- Email + in-app notification on share
+- User shares with three permission levels (View / Edit / Manage)
+- Shareable links with optional password and expiration
+- Email + in-app notification on new shares
 
 ### Version History
 - Automatic versioning on file re-upload
-- Version history viewer with download
+- Version history viewer with per-version download
 - Restore to any previous version
 
 ### Search & Organization
-- Combined file + folder search via Topbar
-- Each file result links back to its parent folder
-- Filter by file type, date range, owner, tags (via search API params)
-- Favorites
-- Color-coded tags
+- **SPA search** (top bar) covers files + folders by name, with each
+  file result linking back to its parent folder.
+- **API-level filters** — file_type, date range, owner, tags — are
+  accepted by `search.search` but the SPA only exposes the name-based
+  fast path; richer filter UI is on the roadmap.
+- Favorites (SPA + API)
+- Color-coded tags — DocType + API exist; the SPA does not yet expose
+  tag chips or a tag filter (roadmap).
 
 ### Storage Management
-- Per-tenant storage quota (configurable GB limit, independent of the
-  tenant-wide budget owned by `lifegence_core.SaaS Tenant`)
+- Per-app storage quota (configurable GB limit), independent of the
+  tenant-wide budget owned by `lifegence_core.SaaS Tenant`
 - Per-file size limit
 - Allowed file extension whitelist
 
 ### Activity Log
-- Full audit trail: Upload, Download, Rename, Move, Share, Unshare, Delete, Restore
+- Full audit trail: Upload, Download, Rename, Move, Share, Unshare,
+  Delete, Restore
 
 ### Maintenance utilities
 
-Bench-CLI entry points for housekeeping (idempotent, dry-run by default):
+Bench-CLI entry points for housekeeping. Both are dry-run by default;
+pass `--kwargs "{'commit': True}"` to actually delete.
 
 ```bash
 bench --site <site> execute lifegence_drive.drive.services.integrity_check.find_ghosts
-bench --site <site> execute lifegence_drive.drive.services.integrity_check.delete_ghosts --kwargs "{'commit': True}"
+bench --site <site> execute lifegence_drive.drive.services.integrity_check.delete_ghosts \
+    --kwargs "{'commit': True}"
 bench --site <site> execute lifegence_drive.drive.services.integrity_check.find_empty_folders
-bench --site <site> execute lifegence_drive.drive.services.integrity_check.delete_empty_folders --kwargs "{'commit': True}"
+bench --site <site> execute lifegence_drive.drive.services.integrity_check.delete_empty_folders \
+    --kwargs "{'commit': True}"
 ```
 
-`find_ghosts` flags Drive File rows whose `file_url` is missing its
-Frappe File row or its on-disk file. `find_empty_folders` is trash-aware
-and runs bottom-up so nested empties also collapse.
+- `find_ghosts` flags Drive File rows whose `file_url` has no
+  corresponding Frappe File row *and* no file on disk.
+- `find_empty_folders` is trash-aware and runs bottom-up so that
+  nested empty folders also collapse once their children disappear.
 
 ---
 
@@ -98,45 +120,45 @@ and runs bottom-up so nested empties also collapse.
 
 All endpoints are available at `/api/method/lifegence_drive.drive.api.*`.
 
-### File Operations (`api/file`)
+### File operations (`api/file`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `file.upload` | Upload file (multipart form, optional `folder`, `is_private`) |
+| POST | `file.upload` | Upload a file (multipart, optional `folder`, `is_private`) |
 | GET | `file.download` | Download by `name` or `share_link` (guest-accessible for shared links) |
 | GET | `file.preview_share` | Resolve a share link to its metadata (guest-accessible) |
 | POST | `file.rename` | Rename a file |
 | POST | `file.move` | Move file to another folder |
-| GET | `file.get_files` | List files in folder (sortable, paginated) |
+| GET | `file.get_files` | List files in a folder (sortable, paginated) |
 
-### Folder Operations (`api/folder`)
+### Folder operations (`api/folder`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `folder.create` | Create folder (optional `parent_folder`) |
+| POST | `folder.create` | Create a folder (optional `parent_folder`) |
 | POST | `folder.rename` | Rename a folder |
-| POST | `folder.move` | Move folder to another parent |
+| POST | `folder.move` | Move a folder to another parent |
 | GET | `folder.get_folders` | List subfolders (`with_counts=1` adds `item_count`) |
-| GET | `folder.get_breadcrumb` | Get path from root to folder |
+| GET | `folder.get_breadcrumb` | Path from root to the given folder |
 | GET | `folder.get_contents` | Combined view: folders + files + breadcrumb |
 
-### Share Operations (`api/share`)
+### Share operations (`api/share`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `share.create_share` | Share with a user |
 | POST | `share.remove_share` | Remove a share |
-| POST | `share.generate_link` | Generate shareable link (password / expiration optional) |
+| POST | `share.generate_link` | Generate a shareable link (password / expiration optional) |
 | GET | `share.get_shares` | List shares for an item |
-| GET | `share.get_shared_with_me` | Items shared with current user |
+| GET | `share.get_shared_with_me` | Items shared with the current user |
 
-### Version Operations (`api/version`)
+### Version operations (`api/version`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `version.upload_new_version` | Upload new version of a file |
+| POST | `version.upload_new_version` | Upload a new version of a file |
 | GET | `version.get_versions` | List all versions of a file |
-| POST | `version.restore_version` | Restore file to a previous version |
+| POST | `version.restore_version` | Restore a file to a previous version |
 | GET | `version.download_version` | Download a specific version |
 
 ### Other APIs
@@ -146,12 +168,12 @@ All endpoints are available at `/api/method/lifegence_drive.drive.api.*`.
 | GET | `storage.get_info` | Storage usage, limit, remaining |
 | GET | `search.search` | Search files + folders (filters: type, date, owner, tags) |
 | POST | `favorite.toggle` | Toggle favorite on/off |
-| GET | `favorite.get_favorites` | List user's favorites |
+| GET | `favorite.get_favorites` | List the user's favorites |
 | GET | `trash.get_trash` | List trashed items |
 | POST | `trash.move_to_trash` | Soft-delete an item |
 | POST | `trash.restore` | Restore from trash |
 | POST | `trash.delete_permanently` | Permanently delete |
-| GET | `recent.get_recent_files` | Recently modified accessible files (Vue SPA Recents view) |
+| GET | `recent.get_recent_files` | Recently modified accessible files (SPA Recents view) |
 | POST | `services.thumbnail_service.get_thumbnail` | Single-item thumbnail URL |
 | POST | `services.thumbnail_service.get_thumbnails` | Batch thumbnail lookup (`{name: url}`) |
 | POST | `api.maintenance.list_ghosts` | (System Manager) ghost Drive File rows |
@@ -165,7 +187,7 @@ All endpoints are available at `/api/method/lifegence_drive.drive.api.*`.
 
 - Python 3.10+
 - Frappe Framework v16+
-- Node 20+ and pnpm (only for building the Vue SPA)
+- Node 20+ and pnpm (only required to build the Vue SPA)
 - (Optional) Pillow — image thumbnails
 - (Optional) pypdfium2 — PDF first-page thumbnails
 
@@ -200,7 +222,7 @@ After installation, configure via **Drive Settings** (`/app/drive-settings`):
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Max File Size (MB) | 100 | Maximum size per file upload |
-| Max Storage (GB) | 10 | Total drive storage (independent of tenant-wide budget) |
+| Max Storage (GB) | 10 | Per-app storage budget (independent of the tenant-wide budget) |
 | Allowed Extensions | (empty = allow all) | Comma-separated whitelist |
 | Enable Versioning | Yes | Track file version history |
 | Trash Retention Days | 30 | Days before auto-delete from trash |
@@ -214,16 +236,16 @@ After installation, configure via **Drive Settings** (`/app/drive-settings`):
 | Drive User | Upload, download, create folders, share, manage own files |
 | Drive Manager | Full access including deletion and settings |
 
-The Vue SPA enforces fine-grained access at the API layer
+Fine-grained access is enforced at the API layer
 (`permission_service.can_view_file`, `can_manage_file`, etc.) — see
 `drive/services/permission_service.py`. DocType-level role permissions
-gate the Frappe Desk forms used by admins for raw-data inspection.
+only gate the Frappe Desk forms used by admins for raw-data inspection.
 
 ---
 
 ## Frontend (Vue 3 SPA)
 
-Source lives in `frontend/`. The vite build emits assets into
+Source lives in `frontend/`. The Vite build emits assets into
 `lifegence_drive/public/frontend/` and the entry template into
 `lifegence_drive/www/drive_app.html`.
 
@@ -236,7 +258,7 @@ pnpm lint     # eslint
 ```
 
 CI: `.github/workflows/frontend.yml` runs `pnpm install` → `pnpm lint`
-→ `pnpm build` on every push touching `frontend/`.
+→ `pnpm build` on every push that touches `frontend/`.
 
 Source organisation:
 
@@ -244,22 +266,23 @@ Source organisation:
 frontend/src/
 ├── App.vue / main.js / router.js / store.js / style.css
 ├── i18n/ja.json + en.json
-├── components/        # AppLayout, Sidebar, Topbar, Breadcrumb, FileGrid,
-│                       FileList, FileBrowser, ItemBrowser, FolderTreeNode,
-│                       FileTypeIcon, FilePreview, ShareDialog, MoveDialog,
-│                       ContextMenu, UploadQueue, DropZone, StorageBar,
-│                       ViewToggle, LocaleToggle, Modal
-├── composables/       # useContextMenu, useDialogs, useFileUpload,
-│                       useI18n, useItemActions, useThumbnails,
-│                       previewKind, normalizeItem
-└── views/             # MyFiles, Folder, Shared, Favorites, Recents,
-                        Trash, Search, NotFound
+├── components/   # AppLayout, Sidebar, Topbar, Breadcrumb, FileGrid,
+│                  FileList, FileBrowser, ItemBrowser, FolderTreeNode,
+│                  FileTypeIcon, FilePreview, ShareDialog, MoveDialog,
+│                  ContextMenu, UploadQueue, DropZone, StorageBar,
+│                  ViewToggle, LocaleToggle, Modal
+├── composables/  # useContextMenu, useDialogs, useFileUpload, useI18n,
+│                  useItemActions, useThumbnails, previewKind,
+│                  normalizeItem
+└── views/        # MyFiles, Folder, Shared, Favorites, Recents,
+                   Trash, Search, NotFound
 ```
 
-License posture: the SPA is built independently of [`frappe/drive`](https://github.com/frappe/drive)
-(AGPL-3.0). `frappe/drive` is used **only as a reference for design
-patterns** — no source code, JSON, or Vue components are copied.
-`frappe-ui` (MIT) is used freely as a UI library.
+License posture: the SPA is built **independently** of
+[`frappe/drive`](https://github.com/frappe/drive) (AGPL-3.0).
+`frappe/drive` is used only as a reference for design patterns — no
+source code, JSON, or Vue components are copied. `frappe-ui` (MIT) is
+used freely as a UI library.
 
 ---
 
@@ -269,7 +292,7 @@ patterns** — no source code, JSON, or Vue components are copied.
 lifegence_drive/
 ├── drive/
 │   ├── api/                       # Whitelisted API endpoints
-│   │   ├── file.py                # File upload/download/move/rename
+│   │   ├── file.py                # File upload / download / move / rename
 │   │   ├── folder.py              # Folder CRUD + navigation + with_counts
 │   │   ├── trash.py               # Trash operations
 │   │   ├── share.py               # Sharing + link generation
