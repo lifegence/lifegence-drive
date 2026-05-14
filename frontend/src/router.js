@@ -57,6 +57,28 @@ const router = createRouter({
   routes,
 })
 
+function isGuest() {
+  const name = window.frappe?.boot?.user?.name
+  // If boot data is missing we cannot tell; let the request go and let
+  // the API surface its own 401 rather than redirect-loop here.
+  if (!name) return false
+  return name === "Guest"
+}
+
+router.beforeEach((to, _from, next) => {
+  // Routes with meta.allowGuest are reachable without a Frappe session
+  // (e.g. future shared-link landing pages backed by allow_guest=True APIs).
+  if (to.meta.allowGuest) {
+    return next()
+  }
+  if (isGuest()) {
+    const target = `/drive_app${to.fullPath === "/" ? "/" : to.fullPath}`
+    window.location.href = `/login?redirect-to=${encodeURIComponent(target)}`
+    return
+  }
+  next()
+})
+
 router.afterEach((to) => {
   const base = "Lifegence Drive"
   document.title = to.meta.title ? `${to.meta.title} | ${base}` : base
