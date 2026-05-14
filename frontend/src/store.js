@@ -38,3 +38,17 @@ export const useBreadcrumbStore = defineStore("breadcrumb", () => {
   }
   return { crumbs, set, reset }
 })
+
+export const useUiStore = defineStore("ui", () => {
+  const sidebarOpen = ref(false)
+  function toggleSidebar() {
+    sidebarOpen.value = !sidebarOpen.value
+  }
+  function openSidebar() {
+    sidebarOpen.value = true
+  }
+  function closeSidebar() {
+    sidebarOpen.value = false
+  }
+  return { sidebarOpen, toggleSidebar, openSidebar, closeSidebar }
+})

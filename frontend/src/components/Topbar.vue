@@ -1,5 +1,15 @@
 <template>
-  <header class="h-14 shrink-0 border-b border-gray-200 bg-white flex items-center px-4 gap-4">
+  <header class="h-14 shrink-0 border-b border-gray-200 bg-white flex items-center px-3 sm:px-4 gap-2 sm:gap-4">
+    <!-- Hamburger (mobile only) -->
+    <button
+      type="button"
+      class="md:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900"
+      :aria-label="t('search.placeholder')"
+      @click="ui.toggleSidebar"
+    >
+      <Menu :size="20" />
+    </button>
+
     <form
       class="flex-1 max-w-md"
       @submit.prevent="submit"
@@ -27,11 +37,12 @@
       </div>
     </form>
 
-    <div class="ml-auto flex items-center gap-3">
+    <div class="ml-auto flex items-center gap-2 sm:gap-3">
       <LocaleToggle />
-      <div class="text-sm text-gray-600 flex items-center gap-2">
+      <div class="text-sm text-gray-600 flex items-center gap-1 sm:gap-2">
         <UserCircle :size="20" />
-        <span>{{ user.currentUser }}</span>
+        <!-- Email hidden on phone to save horizontal room -->
+        <span class="hidden sm:inline truncate max-w-[8rem]">{{ user.currentUser }}</span>
       </div>
     </div>
   </header>
@@ -40,14 +51,15 @@
 <script setup>
 import { ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Search, UserCircle, X } from "lucide-vue-next"
-import { useUserStore } from "@/store"
+import { Menu, Search, UserCircle, X } from "lucide-vue-next"
+import { useUiStore, useUserStore } from "@/store"
 import { useI18n } from "@/composables/useI18n"
 import LocaleToggle from "@/components/LocaleToggle.vue"
 
 const { t } = useI18n()
 
 const user = useUserStore()
+const ui = useUiStore()
 const router = useRouter()
 const route = useRoute()
 const query = ref(typeof route.query.q === "string" ? route.query.q : "")
