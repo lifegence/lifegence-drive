@@ -65,6 +65,13 @@ const routes = [
     meta: { title: "スキャンテンプレート" },
   },
   {
+    path: "/scan-templates/:id",
+    name: "ScanTemplateDetail",
+    component: () => import("@/views/scanner/ScanTemplateDetail.vue"),
+    props: true,
+    meta: { title: "スキャンテンプレート" },
+  },
+  {
     path: "/scan-usage",
     name: "ScanUsage",
     component: () => import("@/views/scanner/ScanUsage.vue"),
