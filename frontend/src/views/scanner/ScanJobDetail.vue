@@ -200,6 +200,7 @@ import { ErrorMessage, call, createResource } from "frappe-ui"
 import ScanStatusBadge from "@/components/scanner/ScanStatusBadge.vue"
 import ScanItemStatus from "@/components/scanner/ScanItemStatus.vue"
 import { useBreadcrumbStore } from "@/store"
+import { useSocket } from "@/composables/useSocket"
 import { ref } from "vue"
 
 const props = defineProps({
@@ -225,6 +226,19 @@ const canCancel = computed(() => ["Queued", "Processing"].includes(job.value?.st
 const canRestart = computed(() => ["Draft", "Failed", "Cancelled"].includes(job.value?.status))
 const isRunning = computed(() => ["Queued", "Processing"].includes(job.value?.status))
 
+// --- Realtime: prefer Socket.IO, fall back to polling --------------------
+// Frappe's scan_processor pushes "scan_job_progress" events with
+// { job_name, progress, current_item, status }. We reload the resource on
+// every matching event, and keep a slower poll as a safety net in case
+// the socket disconnects.
+const socket = useSocket()
+
+function onScanProgress(data) {
+  if (data?.job_name === props.id) {
+    resource.reload()
+  }
+}
+
 let pollTimer = null
 function startPolling() {
   stopPolling()
@@ -234,7 +248,7 @@ function startPolling() {
       return
     }
     resource.reload()
-  }, 5000)
+  }, 15000) // socket is primary; poll every 15s as a fallback
 }
 function stopPolling() {
   if (pollTimer) {
@@ -243,12 +257,22 @@ function stopPolling() {
   }
 }
 
-watch(isRunning, (running) => {
-  if (running) startPolling()
-  else stopPolling()
-}, { immediate: true })
+watch(
+  isRunning,
+  (running) => {
+    if (running) startPolling()
+    else stopPolling()
+  },
+  { immediate: true },
+)
 
-onBeforeUnmount(stopPolling)
+onMounted(() => {
+  socket?.on?.("scan_job_progress", onScanProgress)
+})
+onBeforeUnmount(() => {
+  stopPolling()
+  socket?.off?.("scan_job_progress", onScanProgress)
+})
 
 async function cancel() {
   acting.value = true
