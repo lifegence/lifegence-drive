@@ -37,6 +37,9 @@ fixtures = [
 # Guest-accessible web pages
 website_route_rules = [
 	{"from_route": "/drive-download", "to_route": "drive_download"},
+	# Vue 3 SPA (Phase 0+, parallel to drive_browser until Phase 5)
+	{"from_route": "/drive_app", "to_route": "drive_app"},
+	{"from_route": "/drive_app/<path:path>", "to_route": "drive_app"},
 ]
 
 guest_pages = ["drive-download"]

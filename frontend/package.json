@@ -1,0 +1,30 @@
+{
+  "name": "lifegence-drive-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue src",
+    "lint:fix": "eslint --ext .js,.vue src --fix"
+  },
+  "dependencies": {
+    "frappe-ui": "^0.1.212",
+    "lucide-vue-next": "^0.543.0",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.14",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.13.0",
+    "eslint-plugin-vue": "^9.30.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "vite": "^5.4.10"
+  },
+  "packageManager": "pnpm@9.12.0"
+}

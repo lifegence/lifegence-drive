@@ -49,6 +49,44 @@
 
 ---
 
+## Modern UI (Vue 3 SPA) — Work in Progress
+
+**Status**: Phase 0 scaffolding (2026-05-14)
+
+A modern Vue 3 + Vite + frappe-ui SPA is being built under `frontend/` to
+replace the existing vanilla JS `drive_browser` page. The new SPA mounts at
+`/drive_app` and runs **in parallel** with `drive_browser` until Phase 5,
+when `drive_browser` will be retired.
+
+| Path | Purpose |
+|------|---------|
+| `/app/drive-browser` | Existing vanilla JS SPA (deprecated in Phase 5) |
+| `/drive_app` | New Vue 3 SPA (Phase 0+) |
+| `/app/drive-file` | Standard Frappe Desk list (kept as fallback) |
+
+### Development
+
+```sh
+cd frontend
+pnpm install
+pnpm dev      # vite dev server on :8080, proxies /api to dev.localhost:8000
+pnpm build    # outputs to ../lifegence_drive/public/frontend/ + ../lifegence_drive/www/drive_app.html
+pnpm lint     # eslint --fix dry-run
+```
+
+Production builds are triggered by `bench build` (front-end assets are
+written into the app's `public/frontend/` directory).
+
+The development roadmap lives in
+[`company-os/docs/scanner-drive-integration-plan.md`](../../company-os/docs/scanner-drive-integration-plan.md).
+
+> **License note**: This SPA is built **independently** of [`frappe/drive`](https://github.com/frappe/drive)
+> (AGPL-3.0). We use `frappe/drive` only as a **reference for design patterns** —
+> no source code, JSON, or Vue components are copied. `frappe-ui` (MIT) is
+> used freely as a UI library.
+
+---
+
 ## DocTypes (9)
 
 | DocType | Type | Description |
