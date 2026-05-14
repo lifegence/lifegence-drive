@@ -1,0 +1,14 @@
+{
+  "app.title": "Lifegence Drive",
+  "nav.myFiles": "My Files",
+  "nav.shared": "Shared",
+  "nav.favorites": "Favorites",
+  "nav.recents": "Recents",
+  "nav.trash": "Trash",
+  "search.placeholder": "Search by file name",
+  "storage.label": "Storage",
+  "common.loading": "Loading…",
+  "common.empty": "No items.",
+  "common.close": "Close",
+  "common.cancel": "Cancel"
+}

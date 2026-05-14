@@ -12,7 +12,7 @@
         <input
           v-model="query"
           type="text"
-          placeholder="ファイル名で検索"
+          :placeholder="t('search.placeholder')"
           class="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
           @input="onInput"
         >
@@ -27,9 +27,12 @@
       </div>
     </form>
 
-    <div class="text-sm text-gray-600 flex items-center gap-2">
-      <UserCircle :size="20" />
-      <span>{{ user.currentUser }}</span>
+    <div class="flex items-center gap-3">
+      <LocaleToggle />
+      <div class="text-sm text-gray-600 flex items-center gap-2">
+        <UserCircle :size="20" />
+        <span>{{ user.currentUser }}</span>
+      </div>
     </div>
   </header>
 </template>
@@ -39,6 +42,10 @@ import { ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { Search, UserCircle, X } from "lucide-vue-next"
 import { useUserStore } from "@/store"
+import { useI18n } from "@/composables/useI18n"
+import LocaleToggle from "@/components/LocaleToggle.vue"
+
+const { t } = useI18n()
 
 const user = useUserStore()
 const router = useRouter()

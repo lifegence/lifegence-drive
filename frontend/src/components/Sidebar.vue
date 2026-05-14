@@ -9,7 +9,7 @@
           :size="20"
           class="text-blue-600"
         />
-        <span>Lifegence Drive</span>
+        <span>{{ t("app.title") }}</span>
       </RouterLink>
     </div>
 
@@ -26,7 +26,7 @@
           :is="item.icon"
           :size="18"
         />
-        <span>{{ item.label }}</span>
+        <span>{{ t(item.labelKey) }}</span>
       </RouterLink>
     </nav>
 
@@ -40,12 +40,15 @@
 import { RouterLink } from "vue-router"
 import { HardDrive, Folder, Share2, Star, Clock, Trash2 } from "lucide-vue-next"
 import StorageBar from "@/components/StorageBar.vue"
+import { useI18n } from "@/composables/useI18n"
+
+const { t } = useI18n()
 
 const items = [
-  { name: "MyFiles", to: "/", label: "マイファイル", icon: Folder },
-  { name: "Shared", to: "/shared", label: "共有", icon: Share2 },
-  { name: "Favorites", to: "/favorites", label: "お気に入り", icon: Star },
-  { name: "Recents", to: "/recents", label: "最近", icon: Clock },
-  { name: "Trash", to: "/trash", label: "ゴミ箱", icon: Trash2 },
+  { name: "MyFiles", to: "/", labelKey: "nav.myFiles", icon: Folder },
+  { name: "Shared", to: "/shared", labelKey: "nav.shared", icon: Share2 },
+  { name: "Favorites", to: "/favorites", labelKey: "nav.favorites", icon: Star },
+  { name: "Recents", to: "/recents", labelKey: "nav.recents", icon: Clock },
+  { name: "Trash", to: "/trash", labelKey: "nav.trash", icon: Trash2 },
 ]
 </script>
