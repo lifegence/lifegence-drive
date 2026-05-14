@@ -57,12 +57,23 @@ const router = createRouter({
   routes,
 })
 
+function getCookie(name) {
+  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`))
+  if (!m) return null
+  try {
+    return decodeURIComponent(m[1])
+  } catch {
+    return m[1]
+  }
+}
+
 function isGuest() {
-  const name = window.frappe?.boot?.user?.name
-  // If boot data is missing we cannot tell; let the request go and let
-  // the API surface its own 401 rather than redirect-loop here.
-  if (!name) return false
-  return name === "Guest"
+  // Frappe sets a non-HttpOnly `user_id` cookie on every response, equal
+  // to the email of the logged-in user or "Guest" for anonymous sessions.
+  // jinjaBootData does not inject window.frappe.boot.user, so the cookie
+  // is the reliable client-side source of truth.
+  const userId = getCookie("user_id")
+  return !userId || userId === "Guest"
 }
 
 router.beforeEach((to, _from, next) => {
