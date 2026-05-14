@@ -3,7 +3,7 @@
     <Sidebar />
     <div class="flex-1 flex flex-col min-w-0">
       <Topbar />
-      <Breadcrumb :crumbs="crumbs" />
+      <Breadcrumb :crumbs="breadcrumbStore.crumbs" />
       <main class="flex-1 overflow-auto">
         <slot />
       </main>
@@ -15,11 +15,7 @@
 import Sidebar from "@/components/Sidebar.vue"
 import Topbar from "@/components/Topbar.vue"
 import Breadcrumb from "@/components/Breadcrumb.vue"
+import { useBreadcrumbStore } from "@/store"
 
-defineProps({
-  crumbs: {
-    type: Array,
-    default: () => [],
-  },
-})
+const breadcrumbStore = useBreadcrumbStore()
 </script>
