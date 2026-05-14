@@ -11,6 +11,7 @@
     <ContextMenu />
     <UploadQueue />
     <ShareDialog />
+    <MoveDialog />
   </div>
 </template>
 
@@ -21,6 +22,7 @@ import Breadcrumb from "@/components/Breadcrumb.vue"
 import ContextMenu from "@/components/ContextMenu.vue"
 import UploadQueue from "@/components/UploadQueue.vue"
 import ShareDialog from "@/components/ShareDialog.vue"
+import MoveDialog from "@/components/MoveDialog.vue"
 import { useBreadcrumbStore } from "@/store"
 
 const breadcrumbStore = useBreadcrumbStore()

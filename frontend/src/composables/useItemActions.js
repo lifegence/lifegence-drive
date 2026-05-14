@@ -6,6 +6,7 @@ import {
   Download,
   RotateCcw,
   Share2,
+  FolderInput,
   X,
 } from "lucide-vue-next"
 import { call } from "frappe-ui"
@@ -108,6 +109,7 @@ export function useItemActions({ onReload }) {
       }
       items.push({ label: "お気に入り", icon: Star, onClick: () => toggleFavorite(item) })
       items.push({ label: "名前を変更", icon: Pencil, onClick: () => rename(item) })
+      items.push({ label: "移動", icon: FolderInput, onClick: () => dialogs.openMove(item, onReload) })
       items.push({ label: "共有", icon: Share2, onClick: () => dialogs.openShare(item, onReload) })
       items.push({ separator: true })
       items.push({ label: "ゴミ箱へ移動", icon: Trash2, danger: true, onClick: () => moveToTrash(item) })
