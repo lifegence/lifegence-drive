@@ -6,6 +6,7 @@
       type="button"
       class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:border-gray-300 p-3 cursor-pointer text-left"
       @click="$emit('open', item)"
+      @contextmenu.prevent="$emit('context', $event, item)"
     >
       <FileTypeIcon
         :is-folder="item.kind === 'folder'"
@@ -36,7 +37,7 @@ defineProps({
   items: { type: Array, required: true },
 })
 
-defineEmits(["open"])
+defineEmits(["open", "context"])
 
 function formatBytes(n) {
   if (n == null) return ""

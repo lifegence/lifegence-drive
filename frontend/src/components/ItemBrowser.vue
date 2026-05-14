@@ -28,11 +28,13 @@
       v-else-if="viewStore.mode === 'grid'"
       :items="items"
       @open="(item) => $emit('open', item)"
+      @context="(event, item) => $emit('context', event, item)"
     />
     <FileList
       v-else
       :items="items"
       @open="(item) => $emit('open', item)"
+      @context="(event, item) => $emit('context', event, item)"
     />
   </div>
 </template>
@@ -52,7 +54,7 @@ defineProps({
   emptyText: { type: String, default: "アイテムがありません。" },
 })
 
-defineEmits(["open"])
+defineEmits(["open", "context"])
 
 const viewStore = useViewStore()
 </script>

@@ -20,6 +20,7 @@
           :key="`${item.kind}-${item.id}`"
           class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
           @click="$emit('open', item)"
+          @contextmenu.prevent="$emit('context', $event, item)"
         >
           <td class="px-3 py-2">
             <div class="flex items-center gap-2 min-w-0">
@@ -51,7 +52,7 @@ defineProps({
   items: { type: Array, required: true },
 })
 
-defineEmits(["open"])
+defineEmits(["open", "context"])
 
 function formatBytes(n) {
   if (n == null) return ""

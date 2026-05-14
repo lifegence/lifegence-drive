@@ -5,6 +5,7 @@
     :loading="resource.loading"
     :error="resource.error"
     empty-text="ゴミ箱は空です。"
+    @context="(event, item) => actions.showFor(event, item, 'trash')"
   />
 </template>
 
@@ -13,6 +14,7 @@ import { computed, onMounted } from "vue"
 import { createResource } from "frappe-ui"
 import ItemBrowser from "@/components/ItemBrowser.vue"
 import { normalizeFromTrash } from "@/composables/normalizeItem"
+import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore } from "@/store"
 
 const breadcrumbStore = useBreadcrumbStore()
@@ -24,5 +26,6 @@ const resource = createResource({
 })
 
 const items = computed(() => normalizeFromTrash(resource.data))
-// Restore / permanent delete actions land in Phase 1-8 (ContextMenu).
+
+const actions = useItemActions({ onReload: () => resource.reload() })
 </script>

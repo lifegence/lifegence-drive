@@ -6,22 +6,22 @@
     :error="contents.error"
     empty-text="このフォルダは空です。"
     @open="onOpen"
+    @context="onContext"
   />
 </template>
 
 <script setup>
 import { computed, watch } from "vue"
-import { useRouter } from "vue-router"
 import { createResource } from "frappe-ui"
 import ItemBrowser from "@/components/ItemBrowser.vue"
 import { useBreadcrumbStore } from "@/store"
+import { useItemActions } from "@/composables/useItemActions"
 
 const props = defineProps({
   folderId: { type: String, default: null },
   title: { type: String, default: "マイファイル" },
 })
 
-const router = useRouter()
 const breadcrumbStore = useBreadcrumbStore()
 
 const contents = createResource({
@@ -38,6 +38,8 @@ watch(
   () => props.folderId,
   () => contents.reload(),
 )
+
+const actions = useItemActions({ onReload: () => contents.reload() })
 
 const items = computed(() => {
   const data = contents.data
@@ -65,10 +67,10 @@ const items = computed(() => {
 })
 
 function onOpen(item) {
-  if (item.kind === "folder") {
-    router.push(`/folder/${item.id}`)
-  } else if (item.file_url) {
-    window.open(item.file_url, "_blank", "noopener")
-  }
+  actions.open(item)
+}
+
+function onContext(event, item) {
+  actions.showFor(event, item, "default")
 }
 </script>

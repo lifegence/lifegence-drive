@@ -5,7 +5,8 @@
     :loading="resource.loading"
     :error="resource.error"
     empty-text="最近のファイルはありません。"
-    @open="onOpen"
+    @open="actions.open"
+    @context="(event, item) => actions.showFor(event, item, 'default')"
   />
 </template>
 
@@ -13,6 +14,7 @@
 import { computed, onMounted } from "vue"
 import { createResource } from "frappe-ui"
 import ItemBrowser from "@/components/ItemBrowser.vue"
+import { useItemActions } from "@/composables/useItemActions"
 import { useBreadcrumbStore } from "@/store"
 
 const breadcrumbStore = useBreadcrumbStore()
@@ -36,9 +38,5 @@ const items = computed(() =>
   })),
 )
 
-function onOpen(item) {
-  if (item.file_url) {
-    window.open(item.file_url, "_blank", "noopener")
-  }
-}
+const actions = useItemActions({ onReload: () => resource.reload() })
 </script>
