@@ -123,3 +123,129 @@ def delete_ghosts(commit: bool = False, also_delete_frappe_file: bool = False) -
 		"deleted_names": deleted,
 		"errors": errors,
 	}
+
+
+def find_empty_folders(verbose: bool = True) -> list[dict]:
+	"""Return Drive Folder rows that contain zero files and zero subfolders.
+
+	Trashed files are excluded from the count (an empty-looking folder
+	that still has soft-deleted files is NOT reported as empty).
+	"""
+	folders = frappe.get_all(
+		"Drive Folder",
+		fields=["name", "folder_name", "parent_folder", "creation", "modified", "created_by"],
+	)
+	if not folders:
+		if verbose:
+			print("No folders to check.")
+		return []
+
+	names = [f.name for f in folders]
+	placeholders = ", ".join(["%s"] * len(names))
+
+	trashed_files = set(
+		frappe.get_all(
+			"Drive Trash",
+			filters={"original_doctype": "Drive File"},
+			pluck="original_name",
+		)
+	)
+	trashed_folders = set(
+		frappe.get_all(
+			"Drive Trash",
+			filters={"original_doctype": "Drive Folder"},
+			pluck="original_name",
+		)
+	)
+
+	# Counts in a single round-trip each
+	file_rows = frappe.db.sql(
+		f"SELECT folder, name FROM `tabDrive File` WHERE folder IN ({placeholders})",
+		tuple(names),
+	)
+	sub_rows = frappe.db.sql(
+		f"SELECT parent_folder, name FROM `tabDrive Folder` WHERE parent_folder IN ({placeholders})",
+		tuple(names),
+	)
+
+	file_count: dict[str, int] = {}
+	for folder, file_name in file_rows:
+		if file_name in trashed_files:
+			continue
+		file_count[folder] = file_count.get(folder, 0) + 1
+
+	sub_count: dict[str, int] = {}
+	for parent, child in sub_rows:
+		if child in trashed_folders:
+			continue
+		sub_count[parent] = sub_count.get(parent, 0) + 1
+
+	empties: list[dict] = []
+	for f in folders:
+		if f.name in trashed_folders:
+			continue
+		if file_count.get(f.name, 0) == 0 and sub_count.get(f.name, 0) == 0:
+			empties.append({
+				"name": f.name,
+				"folder_name": f.folder_name,
+				"parent_folder": f.parent_folder,
+				"created_by": f.created_by,
+				"modified": str(f.modified) if f.modified else None,
+			})
+
+	if verbose:
+		print(f"Empty Drive Folder rows: {len(empties)} / {len(folders)} total")
+		# Group by name so duplicates collapse for human reading
+		by_name: dict[str, int] = {}
+		for e in empties:
+			by_name[e["folder_name"]] = by_name.get(e["folder_name"], 0) + 1
+		for name, n in sorted(by_name.items(), key=lambda x: -x[1])[:30]:
+			print(f"  {n:4} × {name}")
+
+	return empties
+
+
+def delete_empty_folders(commit: bool = False) -> dict:
+	"""Delete every Drive Folder reported by find_empty_folders.
+
+	Iterates bottom-up via repeated passes so that nested empties also
+	clear (after a parent's children disappear, the parent becomes
+	empty in the next pass). Dry-run by default.
+	"""
+	all_deleted: list[str] = []
+	errors: list[dict] = []
+	rounds = 0
+	while True:
+		rounds += 1
+		empties = find_empty_folders(verbose=False)
+		if not empties:
+			break
+		for e in empties:
+			if not commit:
+				all_deleted.append(e["name"])
+				continue
+			try:
+				frappe.delete_doc("Drive Folder", e["name"], ignore_permissions=True, force=1)
+				all_deleted.append(e["name"])
+			except Exception as ex:
+				errors.append({"name": e["name"], "error": str(ex)})
+		if not commit:
+			# Dry-run: a second pass would find the same names again.
+			break
+		if rounds > 20:
+			break
+
+	if commit:
+		frappe.db.commit()
+
+	print(
+		f"{'Deleted' if commit else 'Would delete'} {len(all_deleted)} empty folder(s)"
+		f" in {rounds} pass(es); errors: {len(errors)}"
+	)
+	return {
+		"dry_run": not commit,
+		"deleted_count": len(all_deleted),
+		"deleted_names": all_deleted,
+		"errors": errors,
+		"rounds": rounds,
+	}

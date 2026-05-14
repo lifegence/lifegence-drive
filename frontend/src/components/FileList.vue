@@ -34,7 +34,17 @@
             </div>
           </td>
           <td class="px-3 py-2 text-gray-600 hidden sm:table-cell">
-            {{ item.size != null ? formatBytes(item.size) : "—" }}
+            <template v-if="item.size != null">
+              {{ formatBytes(item.size) }}
+            </template>
+            <template v-else-if="item.kind === 'folder' && item.item_count != null">
+              <span :class="item.item_count === 0 ? 'text-gray-400' : 'text-gray-600'">
+                {{ item.item_count === 0 ? "空" : `${item.item_count} 件` }}
+              </span>
+            </template>
+            <template v-else>
+              —
+            </template>
           </td>
           <td class="px-3 py-2 text-gray-600 hidden md:table-cell">
             {{ formatDate(item.modified) }}

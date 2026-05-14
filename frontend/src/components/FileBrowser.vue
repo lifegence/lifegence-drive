@@ -81,6 +81,7 @@ const items = computed(() => {
     modified: f.modified,
     extension: "",
     mime_type: "",
+    item_count: typeof f.item_count === "number" ? f.item_count : null,
   }))
   const files = (data.files || []).map((f) => ({
     kind: "file",

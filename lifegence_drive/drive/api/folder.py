@@ -66,8 +66,18 @@ def move(name: str, target_parent: str | None = None):
 
 
 @frappe.whitelist()
-def get_folders(parent_folder: str | None = None, order_by: str = "folder_name asc"):
-	"""List Drive Folders under a parent (or root if none specified)."""
+def get_folders(
+	parent_folder: str | None = None,
+	order_by: str = "folder_name asc",
+	with_counts: int | bool = 0,
+):
+	"""List Drive Folders under a parent (or root if none specified).
+
+	When `with_counts` is truthy, each row carries an `item_count`
+	attribute (sum of immediate child folders + non-trashed files).
+	The counts are computed in two grouped queries so the API stays
+	flat and avoids N+1 lookups.
+	"""
 	filters = {}
 	if parent_folder:
 		filters["parent_folder"] = parent_folder
@@ -83,12 +93,46 @@ def get_folders(parent_folder: str | None = None, order_by: str = "folder_name a
 	if order_by not in allowed_orders:
 		order_by = "folder_name asc"
 
-	return frappe.get_all(
+	folders = frappe.get_all(
 		"Drive Folder",
 		filters=filters,
 		fields=["name", "folder_name", "parent_folder", "is_private", "created_by", "creation", "modified"],
 		order_by=order_by,
 	)
+
+	if int(with_counts or 0) and folders:
+		names = [f.name for f in folders]
+		placeholders = ", ".join(["%s"] * len(names))
+
+		trashed_files = set(
+			frappe.get_all(
+				"Drive Trash",
+				filters={"original_doctype": "Drive File"},
+				pluck="original_name",
+			)
+		)
+
+		file_rows = frappe.db.sql(
+			f"SELECT folder, name FROM `tabDrive File` WHERE folder IN ({placeholders})",
+			tuple(names),
+		)
+		file_count: dict[str, int] = {}
+		for folder, fname in file_rows:
+			if fname in trashed_files:
+				continue
+			file_count[folder] = file_count.get(folder, 0) + 1
+
+		sub_rows = frappe.db.sql(
+			f"SELECT parent_folder, COUNT(*) FROM `tabDrive Folder` "
+			f"WHERE parent_folder IN ({placeholders}) GROUP BY parent_folder",
+			tuple(names),
+		)
+		sub_count = dict(sub_rows)
+
+		for f in folders:
+			f["item_count"] = file_count.get(f.name, 0) + int(sub_count.get(f.name, 0) or 0)
+
+	return folders
 
 
 @frappe.whitelist()
@@ -145,7 +189,7 @@ def get_contents(folder: str | None = None, order_by: str = "modified desc", lim
 	"""List both folders and files in a given folder, folders first."""
 	from lifegence_drive.drive.api.file import get_files
 
-	folders = get_folders(parent_folder=folder, order_by="folder_name asc")
+	folders = get_folders(parent_folder=folder, order_by="folder_name asc", with_counts=1)
 	files = get_files(folder=folder, order_by=order_by, limit=limit, start=start)
 
 	return {

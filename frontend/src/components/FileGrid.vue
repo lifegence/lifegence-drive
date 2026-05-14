@@ -26,6 +26,13 @@
       >
         {{ formatBytes(item.size) }}
       </div>
+      <div
+        v-else-if="item.kind === 'folder' && item.item_count != null"
+        class="text-[10px] mt-0.5"
+        :class="item.item_count === 0 ? 'text-gray-400' : 'text-gray-500'"
+      >
+        {{ item.item_count === 0 ? "空" : `${item.item_count} 件` }}
+      </div>
     </button>
   </div>
 </template>
