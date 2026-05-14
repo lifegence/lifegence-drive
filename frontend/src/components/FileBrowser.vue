@@ -53,7 +53,7 @@ const breadcrumbStore = useBreadcrumbStore()
 
 const contents = createResource({
   url: "lifegence_drive.drive.api.folder.get_contents",
-  params: () => ({ folder: props.folderId || undefined }),
+  makeParams: () => ({ folder: props.folderId || undefined }),
   auto: true,
   onSuccess(data) {
     const bc = (data?.breadcrumb || []).map((b) => ({ id: b.name, name: b.folder_name }))

@@ -16,9 +16,15 @@
       />
       <div
         class="mt-2 text-xs text-center text-gray-800 line-clamp-2 break-all"
-        :title="item.label"
+        :title="`${item.label} (${item.id})`"
       >
         {{ item.label }}
+      </div>
+      <div
+        v-if="item.kind === 'folder'"
+        class="text-[10px] text-gray-400 font-mono mt-0.5"
+      >
+        {{ item.id }}
       </div>
       <div
         v-if="item.size != null"

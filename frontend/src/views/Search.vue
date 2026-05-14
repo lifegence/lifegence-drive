@@ -26,12 +26,16 @@ const query = computed(() => (typeof route.query.q === "string" ? route.query.q 
 
 const resource = createResource({
   url: "lifegence_drive.drive.api.search.search",
-  params: () => ({ query: query.value || "" }),
-  auto: () => query.value.length > 0,
+  makeParams: () => ({ query: query.value || "" }),
+  auto: false,
 })
 
-watch(query, () => {
+onMounted(() => {
   if (query.value) resource.reload()
+})
+
+watch(query, (q) => {
+  if (q) resource.reload()
 })
 
 const title = computed(() => (query.value ? `検索: "${query.value}"` : "検索"))

@@ -213,7 +213,7 @@ const acting = ref(false)
 
 const resource = createResource({
   url: "frappe.client.get_doc",
-  params: () => ({ doctype: "Scan Job", name: props.id }),
+  makeParams: () => ({ doctype: "Scan Job", name: props.id }),
   auto: true,
 })
 

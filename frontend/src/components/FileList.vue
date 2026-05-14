@@ -31,6 +31,12 @@
                 :size="18"
               />
               <span class="truncate">{{ item.label }}</span>
+              <span
+                v-if="item.kind === 'folder'"
+                class="text-[10px] text-gray-400 font-mono shrink-0"
+              >
+                {{ item.id }}
+              </span>
             </div>
           </td>
           <td class="px-3 py-2 text-gray-600 hidden sm:table-cell">

@@ -133,7 +133,7 @@ const filters = computed(() => {
 
 const jobs = createResource({
   url: "frappe.client.get_list",
-  params: () => ({
+  makeParams: () => ({
     doctype: "Scan Job",
     fields: [
       "name",
