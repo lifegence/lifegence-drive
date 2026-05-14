@@ -1,13 +1,23 @@
 <template>
+  <img
+    v-if="thumbnailUrl"
+    :src="thumbnailUrl"
+    :alt="''"
+    class="object-cover rounded-sm"
+    :style="{ width: `${size}px`, height: `${size}px` }"
+    loading="lazy"
+    @error="onImgError"
+  >
   <component
     :is="icon"
+    v-else
     :size="size"
     :class="colorClass"
   />
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, ref, watch } from "vue"
 import {
   Folder,
   FileText,
@@ -25,7 +35,15 @@ const props = defineProps({
   mimeType: { type: String, default: "" },
   isFolder: { type: Boolean, default: false },
   size: { type: Number, default: 20 },
+  thumbnail: { type: String, default: null },
 })
+
+const broken = ref(false)
+watch(() => props.thumbnail, () => (broken.value = false))
+const thumbnailUrl = computed(() => (props.thumbnail && !broken.value ? props.thumbnail : null))
+function onImgError() {
+  broken.value = true
+}
 
 const ext = computed(() => (props.extension || "").toLowerCase().replace(/^\./, ""))
 const mime = computed(() => (props.mimeType || "").toLowerCase())

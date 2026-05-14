@@ -12,7 +12,8 @@
         :is-folder="item.kind === 'folder'"
         :extension="item.extension"
         :mime-type="item.mime_type"
-        :size="36"
+        :thumbnail="item.thumbnail_url"
+        :size="40"
       />
       <div
         class="mt-2 text-xs text-center text-gray-800 line-clamp-2 break-all"

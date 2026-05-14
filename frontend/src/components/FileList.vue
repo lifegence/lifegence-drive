@@ -28,7 +28,8 @@
                 :is-folder="item.kind === 'folder'"
                 :extension="item.extension"
                 :mime-type="item.mime_type"
-                :size="18"
+                :thumbnail="item.thumbnail_url"
+                :size="20"
               />
               <span class="truncate">{{ item.label }}</span>
               <span

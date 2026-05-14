@@ -43,6 +43,7 @@ import DropZone from "@/components/DropZone.vue"
 import { useBreadcrumbStore } from "@/store"
 import { useItemActions } from "@/composables/useItemActions"
 import { useFileUpload } from "@/composables/useFileUpload"
+import { useThumbnails } from "@/composables/useThumbnails"
 
 const props = defineProps({
   folderId: { type: String, default: null },
@@ -68,6 +69,7 @@ watch(
 
 const actions = useItemActions({ onReload: () => contents.reload() })
 const upload = useFileUpload()
+const thumbnails = useThumbnails()
 const fileInput = ref(null)
 
 const items = computed(() => {
@@ -92,9 +94,13 @@ const items = computed(() => {
     extension: f.extension || "",
     mime_type: f.mime_type || "",
     file_url: f.file_url,
+    thumbnail_url: thumbnails.getUrl(f.name),
   }))
   return [...folders, ...files]
 })
+
+// Batch-fetch thumbnails once the file list is known.
+watch(items, (list) => thumbnails.load(list))
 
 function onOpen(item) {
   actions.open(item)
