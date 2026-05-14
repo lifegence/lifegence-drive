@@ -11,6 +11,14 @@ export_python_type_annotations = True
 
 after_install = "lifegence_drive.install.after_install"
 
+# Expose csrf_token (and user) to the Vue SPA:
+# - update_website_context: puts csrf_token on the jinja render context so
+#   drive_app.html can emit `window.csrf_token = "{{ csrf_token }}"`.
+# - boot_session: also lifts csrf_token + user.name into the boot dict so
+#   frappe-ui's jinjaBootData expands them as window.csrf_token / window.user.
+update_website_context = "lifegence_drive.boot.update_website_context"
+boot_session = "lifegence_drive.boot.boot_session"
+
 add_to_apps_screen = [
 	{
 		"name": "lifegence_drive",

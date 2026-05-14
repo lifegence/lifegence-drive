@@ -9,17 +9,14 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
     <!--
-      Jinja injection — replaced by Frappe at render time.
-      frappe-ui's jinjaBootData expands the `boot` dict, but does NOT include
-      csrf_token; expose it explicitly via frappe.local so frappeRequest can
-      attach X-Frappe-CSRF-Token to authenticated POSTs.
-      Guest sessions render "None" (stringified Python None), which we
-      coerce to empty so frappeRequest treats it as missing.
+      Inject csrf_token via the jinja render context (populated by
+      lifegence_drive.boot.update_website_context). frappe-ui's
+      frappeRequest reads window.csrf_token to attach X-Frappe-CSRF-Token
+      on POSTs; this is the same pattern Frappe Desk uses on /app.
     -->
     <script>
       // prettier-ignore
-      window.csrf_token = "{{ frappe.local.csrf_token or '' }}";
-      if (window.csrf_token === "None") window.csrf_token = "";
+      window.csrf_token = "{{ csrf_token }}";
     </script>
   </body>
 </html>
