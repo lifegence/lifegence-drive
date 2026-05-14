@@ -29,10 +29,6 @@
         <span>{{ t(item.labelKey) }}</span>
       </RouterLink>
 
-      <div class="mt-2">
-        <SidebarFolderTree />
-      </div>
-
       <div class="mt-3 mx-4 mb-1 text-[10px] uppercase tracking-wider text-gray-400 font-medium">
         {{ t("nav.scannerSection") }}
       </div>
@@ -72,7 +68,6 @@ import {
   BarChart3,
 } from "lucide-vue-next"
 import StorageBar from "@/components/StorageBar.vue"
-import SidebarFolderTree from "@/components/SidebarFolderTree.vue"
 import { useI18n } from "@/composables/useI18n"
 
 const { t } = useI18n()
