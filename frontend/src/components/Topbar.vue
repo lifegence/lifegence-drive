@@ -27,7 +27,7 @@
       </div>
     </form>
 
-    <div class="flex items-center gap-3">
+    <div class="ml-auto flex items-center gap-3">
       <LocaleToggle />
       <div class="text-sm text-gray-600 flex items-center gap-2">
         <UserCircle :size="20" />
