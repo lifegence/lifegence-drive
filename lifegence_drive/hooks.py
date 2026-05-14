@@ -34,15 +34,6 @@ scheduler_events = {
 	],
 }
 
-# One-way sync: a SaaS Tenant quota change propagates into Drive Settings
-# on the same site (lifegence_core owns the tenant master). If SaaS Tenant
-# is not installed, Frappe silently skips the binding.
-doc_events = {
-	"SaaS Tenant": {
-		"on_update": "lifegence_drive.drive.hooks.saas_sync.sync_drive_settings_from_tenant",
-	},
-}
-
 fixtures = [
 	"Drive Settings",
 ]
