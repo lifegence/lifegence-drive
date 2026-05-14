@@ -44,6 +44,32 @@ const routes = [
     component: () => import("@/views/Search.vue"),
     meta: { title: "検索" },
   },
+  // --- Scanner (Phase 2) ---
+  {
+    path: "/scans",
+    name: "ScanJobs",
+    component: () => import("@/views/scanner/ScanJobs.vue"),
+    meta: { title: "スキャン" },
+  },
+  {
+    path: "/scans/:id",
+    name: "ScanJobDetail",
+    component: () => import("@/views/scanner/ScanJobDetail.vue"),
+    props: true,
+    meta: { title: "スキャンジョブ" },
+  },
+  {
+    path: "/scan-templates",
+    name: "ScanTemplates",
+    component: () => import("@/views/scanner/ScanTemplates.vue"),
+    meta: { title: "スキャンテンプレート" },
+  },
+  {
+    path: "/scan-usage",
+    name: "ScanUsage",
+    component: () => import("@/views/scanner/ScanUsage.vue"),
+    meta: { title: "スキャン使用状況" },
+  },
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
