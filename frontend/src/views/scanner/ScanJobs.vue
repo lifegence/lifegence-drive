@@ -5,6 +5,14 @@
         スキャンジョブ
       </h1>
       <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          @click="dialogs.openUploadAndScan"
+        >
+          <UploadCloud :size="14" />
+          アップロードしてスキャン
+        </button>
         <select
           v-model="statusFilter"
           class="px-2 py-1 text-sm border border-gray-200 rounded-md bg-white"
@@ -112,10 +120,13 @@
 import { computed, onMounted, watch } from "vue"
 import { useRouter } from "vue-router"
 import { ErrorMessage, createResource } from "frappe-ui"
-import { RefreshCw } from "lucide-vue-next"
+import { RefreshCw, UploadCloud } from "lucide-vue-next"
 import ScanStatusBadge from "@/components/scanner/ScanStatusBadge.vue"
 import { useBreadcrumbStore } from "@/store"
+import { useDialogs } from "@/composables/useDialogs"
 import { ref } from "vue"
+
+const dialogs = useDialogs()
 
 const router = useRouter()
 const breadcrumbStore = useBreadcrumbStore()

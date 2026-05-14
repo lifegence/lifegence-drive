@@ -14,6 +14,7 @@
     <MoveDialog />
     <FilePreview />
     <ScanTemplateModal />
+    <UploadAndScanDialog />
   </div>
 </template>
 
@@ -27,6 +28,7 @@ import ShareDialog from "@/components/ShareDialog.vue"
 import MoveDialog from "@/components/MoveDialog.vue"
 import FilePreview from "@/components/FilePreview.vue"
 import ScanTemplateModal from "@/components/scanner/ScanTemplateModal.vue"
+import UploadAndScanDialog from "@/components/scanner/UploadAndScanDialog.vue"
 import { useBreadcrumbStore } from "@/store"
 
 const breadcrumbStore = useBreadcrumbStore()
