@@ -1,10 +1,38 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-semibold mb-2">
-      お気に入り
-    </h1>
-    <p class="text-sm text-gray-600">
-      お気に入りファイル(Phase 1-5 で実装、favorite.get_favorites API)
-    </p>
-  </div>
+  <ItemBrowser
+    title="お気に入り"
+    :items="items"
+    :loading="resource.loading"
+    :error="resource.error"
+    empty-text="お気に入りはありません。"
+    @open="onOpen"
+  />
 </template>
+
+<script setup>
+import { computed, onMounted } from "vue"
+import { useRouter } from "vue-router"
+import { createResource } from "frappe-ui"
+import ItemBrowser from "@/components/ItemBrowser.vue"
+import { normalizeFromTypeField } from "@/composables/normalizeItem"
+import { useBreadcrumbStore } from "@/store"
+
+const router = useRouter()
+const breadcrumbStore = useBreadcrumbStore()
+onMounted(() => breadcrumbStore.reset())
+
+const resource = createResource({
+  url: "lifegence_drive.drive.api.favorite.get_favorites",
+  auto: true,
+})
+
+const items = computed(() => normalizeFromTypeField(resource.data))
+
+function onOpen(item) {
+  if (item.kind === "folder") {
+    router.push(`/folder/${item.id}`)
+  } else if (item.file_url) {
+    window.open(item.file_url, "_blank", "noopener")
+  }
+}
+</script>
