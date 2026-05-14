@@ -4,8 +4,6 @@ const state = reactive({
   share: { open: false, item: null, onAfter: null },
   move: { open: false, item: null, onAfter: null },
   preview: { open: false, item: null },
-  scanTemplate: { open: false, item: null },
-  uploadAndScan: { open: false },
 })
 
 export function useDialogs() {
@@ -41,20 +39,6 @@ export function useDialogs() {
     state.preview.open = false
     state.preview.item = null
   }
-  function openScanTemplate(item) {
-    state.scanTemplate.item = item
-    state.scanTemplate.open = true
-  }
-  function closeScanTemplate() {
-    state.scanTemplate.open = false
-    state.scanTemplate.item = null
-  }
-  function openUploadAndScan() {
-    state.uploadAndScan.open = true
-  }
-  function closeUploadAndScan() {
-    state.uploadAndScan.open = false
-  }
   return {
     state: readonly(state),
     openShare,
@@ -63,9 +47,5 @@ export function useDialogs() {
     closeMove,
     openPreview,
     closePreview,
-    openScanTemplate,
-    closeScanTemplate,
-    openUploadAndScan,
-    closeUploadAndScan,
   }
 }
