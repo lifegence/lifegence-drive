@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lifegence Drive</title>
+  </head>
+  <body class="font-sans antialiased">
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <!--
+      Inject csrf_token via the jinja render context (populated by
+      lifegence_drive.boot.update_website_context). frappe-ui's
+      frappeRequest reads window.csrf_token to attach X-Frappe-CSRF-Token
+      on POSTs; this is the same pattern Frappe Desk uses on /app.
+    -->
+    <script>
+      // prettier-ignore
+      window.csrf_token = "{{ csrf_token }}";
+    </script>
+  </body>
+</html>
