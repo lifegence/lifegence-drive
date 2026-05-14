@@ -24,7 +24,7 @@ add_to_apps_screen = [
 		"name": "lifegence_drive",
 		"logo": "/assets/lifegence_drive/images/drive-logo.svg",
 		"title": "ドライブ",
-		"route": "/app/drive-file",
+		"route": "/drive_app",
 	},
 ]
 
@@ -43,10 +43,6 @@ doc_events = {
 	},
 }
 
-doctype_tree_js = {
-	"Drive Folder": "public/js/drive_folder_tree.js",
-}
-
 fixtures = [
 	"Drive Settings",
 ]
@@ -54,7 +50,7 @@ fixtures = [
 # Guest-accessible web pages
 website_route_rules = [
 	{"from_route": "/drive-download", "to_route": "drive_download"},
-	# Vue 3 SPA (Phase 0+, parallel to drive_browser until Phase 5)
+	# Vue 3 SPA — the single entry point for the drive UI
 	{"from_route": "/drive_app", "to_route": "drive_app"},
 	{"from_route": "/drive_app/<path:path>", "to_route": "drive_app"},
 ]
