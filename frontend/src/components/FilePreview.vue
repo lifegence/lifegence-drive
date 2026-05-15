@@ -5,16 +5,21 @@
     width="2xl"
     @close="dialogs.closePreview"
   >
-    <template #header-actions>
-      <button
-        v-if="item"
-        type="button"
-        class="text-gray-400 hover:text-gray-700 focus:outline-none transition-colors duration-150"
-        :title="t('action.copyPath')"
-        @click="copy"
-      >
-        <Clipboard :size="18" />
-      </button>
+    <template #title>
+      <div class="flex items-center gap-2 overflow-hidden flex-1 mr-2">
+        <h2 class="text-base font-semibold truncate">
+          {{ item?.label || '' }}
+        </h2>
+        <button
+          v-if="item"
+          type="button"
+          class="text-gray-400 hover:text-gray-700 focus:outline-none transition-colors duration-150 shrink-0"
+          :title="t('action.copyPath')"
+          @click="copy"
+        >
+          <Clipboard :size="16" />
+        </button>
+      </div>
     </template>
     <div class="min-h-[60vh] flex items-center justify-center bg-gray-50 -mx-4 -my-3 p-4">
       <template v-if="!item">
