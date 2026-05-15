@@ -5,6 +5,17 @@
     width="2xl"
     @close="dialogs.closePreview"
   >
+    <template #header-actions>
+      <button
+        v-if="item"
+        type="button"
+        class="text-gray-400 hover:text-gray-700 focus:outline-none transition-colors duration-150"
+        :title="t('action.copyPath')"
+        @click="copy"
+      >
+        <Clipboard :size="18" />
+      </button>
+    </template>
     <div class="min-h-[60vh] flex items-center justify-center bg-gray-50 -mx-4 -my-3 p-4">
       <template v-if="!item">
         <span class="text-gray-500">読み込み中…</span>
@@ -89,17 +100,27 @@
 
 <script setup>
 import { computed, ref, watch } from "vue"
-import { FileX } from "lucide-vue-next"
+import { FileX, Clipboard } from "lucide-vue-next"
 import { ErrorMessage } from "frappe-ui"
 import Modal from "@/components/Modal.vue"
 import { useDialogs } from "@/composables/useDialogs"
 import { previewKind } from "@/composables/previewKind"
+import { useItemActions } from "@/composables/useItemActions"
+import { useI18n } from "@/composables/useI18n"
 
 const dialogs = useDialogs()
 const { state } = dialogs
+const { t } = useI18n()
+const { copyPath } = useItemActions({})
 
 const item = computed(() => state.preview.item)
 const kind = computed(() => previewKind(item.value))
+
+function copy() {
+  if (item.value) {
+    copyPath(item.value)
+  }
+}
 
 const textContent = ref("")
 const textLoading = ref(false)

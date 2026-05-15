@@ -11,16 +11,21 @@
         :class="widthClass"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <h2 class="text-base font-semibold">
-            {{ title }}
-          </h2>
-          <button
-            type="button"
-            class="text-gray-500 hover:text-gray-800"
-            @click="$emit('close')"
-          >
-            <X :size="18" />
-          </button>
+          <slot name="title">
+            <h2 class="text-base font-semibold truncate flex-1 mr-2">
+              {{ title }}
+            </h2>
+          </slot>
+          <div class="flex items-center gap-2">
+            <slot name="header-actions" />
+            <button
+              type="button"
+              class="text-gray-500 hover:text-gray-800"
+              @click="$emit('close')"
+            >
+              <X :size="18" />
+            </button>
+          </div>
         </div>
         <div class="px-4 py-3 overflow-auto">
           <slot />

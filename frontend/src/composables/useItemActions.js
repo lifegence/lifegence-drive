@@ -139,5 +139,5 @@ export function useItemActions({ onReload }) {
     ctx.show(event, items)
   }
 
-  return { showFor, open, download }
+  return { showFor, open, download, copyPath }
 }
