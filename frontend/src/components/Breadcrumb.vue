@@ -31,10 +31,19 @@
         {{ crumb.name }}
       </span>
     </template>
+    
+    <button
+      type="button"
+      class="ml-2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors duration-150"
+      :title="t('action.copyPath')"
+      @click="copyCurrentPath"
+    >
+      <Clipboard :size="14" />
+    </button>
   </nav>
 </template>
-
 <script setup>
+
 import { RouterLink } from "vue-router"
 import { ChevronRight, Clipboard } from "lucide-vue-next"
 import { useContextMenu } from "@/composables/useContextMenu"
@@ -50,11 +59,20 @@ const props = defineProps({
 const ctx = useContextMenu()
 const { t } = useI18n()
 
+function copyCurrentPath() {
+  const pathParts = props.crumbs.map((c) => c.name)
+  let fullPath = "マイファイル"
+  if (pathParts.length > 0) {
+    fullPath += "/" + pathParts.join("/")
+  }
+  navigator.clipboard.writeText(fullPath)
+}
+
 function onContext(event, index) {
-  let fullPath = "/"
+  let fullPath = "マイファイル"
   if (index >= 0) {
     const pathParts = props.crumbs.slice(0, index + 1).map((c) => c.name)
-    fullPath = "/" + pathParts.join("/")
+    fullPath = "マイファイル/" + pathParts.join("/")
   }
 
   ctx.show(event, [
