@@ -61,18 +61,14 @@ const { t } = useI18n()
 
 function copyCurrentPath() {
   const pathParts = props.crumbs.map((c) => c.name)
-  let fullPath = "マイファイル"
-  if (pathParts.length > 0) {
-    fullPath += "/" + pathParts.join("/")
-  }
-  navigator.clipboard.writeText(fullPath)
+  navigator.clipboard.writeText(pathParts.join("/"))
 }
 
 function onContext(event, index) {
-  let fullPath = "マイファイル"
+  let fullPath = ""
   if (index >= 0) {
     const pathParts = props.crumbs.slice(0, index + 1).map((c) => c.name)
-    fullPath = "マイファイル/" + pathParts.join("/")
+    fullPath = pathParts.join("/")
   }
 
   ctx.show(event, [

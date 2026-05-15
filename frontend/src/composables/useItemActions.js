@@ -114,7 +114,7 @@ export function useItemActions({ onReload }) {
     const crumbs = breadcrumb.crumbs
     const pathParts = crumbs.map((c) => c.name)
     pathParts.push(item.label)
-    const fullPath = "マイファイル/" + pathParts.join("/")
+    const fullPath = pathParts.join("/")
     navigator.clipboard.writeText(fullPath)
   }
 
