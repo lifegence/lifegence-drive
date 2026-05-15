@@ -20,10 +20,11 @@ on phones, persistent sidebar on tablet / desktop.
 
 - **5 main views**: My Files, Shared, Favorites, Recents, Trash
 - **Folder navigation** with breadcrumbs; folder ID is shown beside
-  the name so same-name folders are distinguishable
+  the name so same-name folders are distinguishable. Includes an explicit **New Folder** action.
 - **Grid / List view toggle** (persisted in `localStorage`)
 - **Right-click context menu**: Open, Download, Favorite, Rename, Move,
-  Share, Move-to-trash (Restore + Delete-permanently in the Trash view)
+  Share, **Copy Path**, Move-to-trash (Restore + Delete-permanently in the Trash view).
+  Breadcrumb items also feature a **Copy Path** context action.
 - **Drag-and-drop upload** with parallel limit 3, progress toast,
   and per-file error surfacing
 - **Share dialog**: per-user shares (View / Edit / Manage) and

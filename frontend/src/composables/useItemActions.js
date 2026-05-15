@@ -8,6 +8,7 @@ import {
   Share2,
   FolderInput,
   X,
+  Clipboard,
 } from "lucide-vue-next"
 import { call } from "frappe-ui"
 import { useRouter } from "vue-router"
@@ -15,12 +16,14 @@ import { useContextMenu } from "@/composables/useContextMenu"
 import { useDialogs } from "@/composables/useDialogs"
 import { isPreviewable } from "@/composables/previewKind"
 import { useI18n } from "@/composables/useI18n"
+import { useBreadcrumbStore } from "@/store"
 
 export function useItemActions({ onReload }) {
   const router = useRouter()
   const ctx = useContextMenu()
   const dialogs = useDialogs()
   const { t } = useI18n()
+  const breadcrumb = useBreadcrumbStore()
 
   function open(item) {
     if (item.kind === "folder") {
@@ -106,6 +109,15 @@ export function useItemActions({ onReload }) {
     }
   }
 
+
+  function copyPath(item) {
+    const crumbs = breadcrumb.crumbs
+    const pathParts = crumbs.map((c) => c.name)
+    pathParts.push(item.label)
+    const fullPath = "/" + pathParts.join("/")
+    navigator.clipboard.writeText(fullPath)
+  }
+
   function showFor(event, item, mode = "default") {
     const items = []
     if (mode === "trash") {
@@ -120,6 +132,7 @@ export function useItemActions({ onReload }) {
       items.push({ label: t("action.rename"), icon: Pencil, onClick: () => rename(item) })
       items.push({ label: t("action.move"), icon: FolderInput, onClick: () => dialogs.openMove(item, onReload) })
       items.push({ label: t("action.share"), icon: Share2, onClick: () => dialogs.openShare(item, onReload) })
+      items.push({ label: t("action.copyPath"), icon: Clipboard, onClick: () => copyPath(item) })
       items.push({ separator: true })
       items.push({ label: t("action.moveToTrash"), icon: Trash2, danger: true, onClick: () => moveToTrash(item) })
     }

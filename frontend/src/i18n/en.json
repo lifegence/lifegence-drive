@@ -44,5 +44,8 @@
   "action.share": "Share",
   "action.moveToTrash": "Move to trash",
   "action.restore": "Restore",
-  "action.deletePermanently": "Delete permanently"
+  "action.deletePermanently": "Delete permanently",
+  "action.newFolder": "New Folder",
+  "action.copyPath": "Copy Path",
+  "error.createFolder": "Failed to create folder"
 }

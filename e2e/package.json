@@ -7,6 +7,7 @@
     "test:local": "TEST_ENV=local playwright test --project=chromium-local",
     "test:saas": "TEST_ENV=saas playwright test --project=chromium-saas",
     "test:coverage": "playwright test --project=chromium-local tests/99-coverage",
+    "test:demo": "TEST_ENV=local playwright test --project=demo-local",
     "report": "playwright show-report reports/html",
     "extract-apis": "python3 ../lifegence_drive/scripts/extract_whitelist_apis.py",
     "seed": "cd ../../../ && bench --site dev.localhost execute lifegence_drive.scripts.seed_e2e.run",

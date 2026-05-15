@@ -18,6 +18,14 @@
           <Upload :size="14" />
           {{ t("common.upload") }}
         </button>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 px-2 py-1 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50"
+          @click="onNewFolder"
+        >
+          <FolderPlus :size="14" />
+          {{ t("action.newFolder") }}
+        </button>
         <input
           ref="fileInput"
           type="file"
@@ -36,8 +44,8 @@
 
 <script setup>
 import { computed, ref, watch } from "vue"
-import { createResource } from "frappe-ui"
-import { Upload } from "lucide-vue-next"
+import { createResource, call } from "frappe-ui"
+import { Upload, FolderPlus } from "lucide-vue-next"
 import ItemBrowser from "@/components/ItemBrowser.vue"
 import DropZone from "@/components/DropZone.vue"
 import { useBreadcrumbStore } from "@/store"
@@ -111,6 +119,21 @@ function onOpen(item) {
 
 function onContext(event, item) {
   actions.showFor(event, item, "default")
+}
+
+
+async function onNewFolder() {
+  const name = window.prompt(t("action.newFolder"), "")
+  if (!name) return
+  try {
+    await call("lifegence_drive.drive.api.folder.create", {
+      folder_name: name,
+      parent_folder: props.folderId || undefined,
+    })
+    contents.reload()
+  } catch (e) {
+    window.alert(t("error.createFolder") + ": " + (e.message || e))
+  }
 }
 
 async function onPick(event) {

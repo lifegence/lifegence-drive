@@ -36,5 +36,22 @@ export default defineConfig({
     { name: 'setup-saas', testDir: './tests', testMatch: /.*\.setup\.ts$/, use: { baseURL: BASE_URL_SAAS } },
     { name: 'chromium-local', use: { ...devices['Desktop Chrome'], baseURL: BASE_URL_LOCAL, storageState: '.auth/admin.local.json' }, dependencies: ['setup-local'] },
     { name: 'chromium-saas', use: { ...devices['Desktop Chrome'], baseURL: BASE_URL_SAAS, storageState: '.auth/admin.saas.json' }, dependencies: ['setup-saas'] },
+    // YouTube demo recorder — 1280x720 with always-on video and paced timing.
+    {
+      name: 'demo-local',
+      testMatch: /tests\/03-demo\/.*\.spec\.ts$/,
+      timeout: 180_000,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: BASE_URL_LOCAL,
+        storageState: '.auth/admin.local.json',
+        viewport: { width: 1280, height: 720 },
+        video: { mode: 'on', size: { width: 1280, height: 720 } },
+        screenshot: 'on',
+        trace: 'on',
+        launchOptions: { slowMo: 120 },
+      },
+      dependencies: ['setup-local'],
+    },
   ],
 });

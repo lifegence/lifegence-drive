@@ -44,5 +44,8 @@
   "action.share": "共有",
   "action.moveToTrash": "ゴミ箱へ移動",
   "action.restore": "復元",
-  "action.deletePermanently": "完全削除"
+  "action.deletePermanently": "完全削除",
+  "action.newFolder": "新規フォルダ",
+  "action.copyPath": "パスをコピー",
+  "error.createFolder": "フォルダ作成に失敗しました"
 }

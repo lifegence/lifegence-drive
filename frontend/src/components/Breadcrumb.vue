@@ -4,7 +4,7 @@
     class="px-6 py-2 border-b border-gray-100 bg-gray-50 text-sm text-gray-600 flex items-center gap-1"
   >
     <RouterLink
-      to="/"
+      to="/" @contextmenu.prevent="onContext($event, -1)"
       class="hover:text-blue-600"
     >
       マイファイル
@@ -19,14 +19,14 @@
       />
       <RouterLink
         v-if="idx < crumbs.length - 1"
-        :to="`/folder/${crumb.id}`"
+        :to="`/folder/${crumb.id}`" @contextmenu.prevent="onContext($event, idx)"
         class="hover:text-blue-600"
       >
         {{ crumb.name }}
       </RouterLink>
       <span
         v-else
-        class="text-gray-900 font-medium"
+        class="text-gray-900 font-medium" @contextmenu.prevent="onContext($event, idx)"
       >
         {{ crumb.name }}
       </span>
@@ -36,13 +36,35 @@
 
 <script setup>
 import { RouterLink } from "vue-router"
-import { ChevronRight } from "lucide-vue-next"
+import { ChevronRight, Clipboard } from "lucide-vue-next"
+import { useContextMenu } from "@/composables/useContextMenu"
+import { useI18n } from "@/composables/useI18n"
 
-defineProps({
+const props = defineProps({
   crumbs: {
     type: Array,
     default: () => [],
-    // crumbs: [{ id, name }, ...]  Phase 1-3 で folder.get_breadcrumb API から取得
   },
 })
+
+const ctx = useContextMenu()
+const { t } = useI18n()
+
+function onContext(event, index) {
+  let fullPath = "/"
+  if (index >= 0) {
+    const pathParts = props.crumbs.slice(0, index + 1).map((c) => c.name)
+    fullPath = "/" + pathParts.join("/")
+  }
+
+  ctx.show(event, [
+    {
+      label: t("action.copyPath"),
+      icon: Clipboard,
+      onClick: () => {
+        navigator.clipboard.writeText(fullPath)
+      },
+    },
+  ])
+}
 </script>
