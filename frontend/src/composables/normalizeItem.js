@@ -16,6 +16,7 @@ export function normalizeFromTypeField(raw) {
         modified: r.modified,
         extension: "",
         mime_type: "",
+        owner: r.created_by || "",
       }
     }
     return {
@@ -27,6 +28,7 @@ export function normalizeFromTypeField(raw) {
       extension: r.extension || "",
       mime_type: r.mime_type || "",
       file_url: r.file_url,
+      owner: r.uploaded_by || "",
     }
   })
 }

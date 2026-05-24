@@ -37,6 +37,7 @@ const items = computed(() =>
     extension: r.extension || "",
     mime_type: r.mime_type || "",
     file_url: r.file_url,
+    owner: r.uploaded_by || "",
   })),
 )
 

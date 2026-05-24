@@ -95,6 +95,7 @@ const items = computed(() => {
     extension: "",
     mime_type: "",
     item_count: typeof f.item_count === "number" ? f.item_count : null,
+    owner: f.created_by || "",
   }))
   const files = (data.files || []).map((f) => ({
     kind: "file",
@@ -106,6 +107,7 @@ const items = computed(() => {
     mime_type: f.mime_type || "",
     file_url: f.file_url,
     thumbnail_url: thumbnails.getUrl(f.name),
+    owner: f.uploaded_by || "",
   }))
   return [...folders, ...files]
 })

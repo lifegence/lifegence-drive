@@ -12,6 +12,9 @@
           <th class="text-left font-medium px-3 py-2 w-40 hidden md:table-cell">
             更新日時
           </th>
+          <th class="text-left font-medium px-3 py-2 w-40 hidden lg:table-cell">
+            所有者
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -56,6 +59,9 @@
           <td class="px-3 py-2 text-gray-600 hidden md:table-cell">
             {{ formatDate(item.modified) }}
           </td>
+          <td class="px-3 py-2 text-gray-600 hidden lg:table-cell">
+            {{ formatOwner(item.owner) }}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -84,6 +90,12 @@ function formatBytes(n) {
     i++
   }
   return `${v.toFixed(v >= 100 || i === 0 ? 0 : 1)} ${units[i]}`
+}
+
+function formatOwner(owner) {
+  if (!owner) return "—"
+  const atIdx = owner.indexOf("@")
+  return atIdx > 0 ? owner.slice(0, atIdx) : owner
 }
 
 function formatDate(iso) {
