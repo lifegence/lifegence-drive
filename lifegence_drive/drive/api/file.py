@@ -117,7 +117,10 @@ def download(name: str | None = None, share_link: str | None = None, password: s
 		file_url = file_data.file_url
 		filename = file_data.file_name
 	else:
+		# Direct access by name requires read permission on the document —
+		# without this, any guest could download arbitrary files (IDOR).
 		drive_file = frappe.get_doc("Drive File", name)
+		drive_file.check_permission("read")
 		file_url = drive_file.file_url
 		filename = drive_file.file_name
 		log_activity("Download", "Drive File", name, f"Downloaded {filename}")
