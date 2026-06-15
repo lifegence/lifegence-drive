@@ -1,12 +1,21 @@
 import frappe
 from frappe import _
 
+from lifegence_drive.drive.services.permission_service import (
+	check_view_permission,
+	get_accessible_file_names,
+	get_accessible_folder_names,
+)
+
 
 @frappe.whitelist()
 def toggle(doctype: str, name: str):
 	"""Toggle favorite status for a file or folder. Returns the new state."""
 	if doctype not in ("Drive File", "Drive Folder"):
 		frappe.throw(_("Invalid doctype for favorite."))
+
+	# Don't let users favorite (and thereby read details of) items they can't view.
+	check_view_permission(doctype, name)
 
 	existing = frappe.db.exists("Drive Favorite", {
 		"favorited_doctype": doctype,
@@ -37,9 +46,18 @@ def get_favorites():
 		fields=["favorited_doctype", "favorited_name"],
 	)
 
-	# Collect names by doctype for batch fetching
-	file_names = [f.favorited_name for f in favs if f.favorited_doctype == "Drive File"]
-	folder_names = [f.favorited_name for f in favs if f.favorited_doctype == "Drive Folder"]
+	# Collect names by doctype, dropping any the user can no longer access
+	# (e.g. a share was revoked after favoriting).
+	accessible_files = get_accessible_file_names()
+	accessible_folders = get_accessible_folder_names()
+	file_names = [
+		f.favorited_name for f in favs
+		if f.favorited_doctype == "Drive File" and f.favorited_name in accessible_files
+	]
+	folder_names = [
+		f.favorited_name for f in favs
+		if f.favorited_doctype == "Drive Folder" and f.favorited_name in accessible_folders
+	]
 
 	# Batch-fetch file details
 	file_map = {}

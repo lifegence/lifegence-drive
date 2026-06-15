@@ -81,6 +81,8 @@ def upload_new_version(name: str, comment: str = ""):
 @frappe.whitelist()
 def get_versions(name: str):
 	"""Get all versions of a Drive File."""
+	# IDOR guard: only the owner / shared users may see version history.
+	check_view_permission("Drive File", name)
 	versions = frappe.get_all(
 		"Drive File Version",
 		filters={"drive_file": name},
