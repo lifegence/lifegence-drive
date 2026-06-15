@@ -20,6 +20,31 @@ def get_accessible_file_names(user: str | None = None) -> set[str]:
     return owned | shared
 
 
+def get_accessible_folder_names(user: str | None = None) -> set[str]:
+    """Get set of Drive Folder names accessible to the user (owned + shared).
+
+    Mirrors :func:`get_accessible_file_names`. Without this, folder listings
+    (get_folders / search) ran unfiltered ``frappe.get_all`` and exposed every
+    user's folders. Sharing is per-entity (same as files): a shared folder does
+    not implicitly expose its subfolders unless those are shared too.
+    """
+    user = user or frappe.session.user
+    if user == "Administrator":
+        return set(frappe.get_all("Drive Folder", pluck="name"))
+
+    owned = set(frappe.get_all(
+        "Drive Folder",
+        filters={"created_by": user},
+        pluck="name",
+    ))
+    shared = set(frappe.get_all(
+        "Drive Share",
+        filters={"shared_with": user, "shared_doctype": "Drive Folder"},
+        pluck="shared_name",
+    ))
+    return owned | shared
+
+
 def can_manage_file(user: str | None, name: str) -> bool:
     """Check if user is the file owner (can share/delete/rename)."""
     user = user or frappe.session.user

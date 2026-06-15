@@ -87,8 +87,14 @@ def delete_permanently(trash_name: str):
 @frappe.whitelist()
 def get_trash(limit: int = 50, start: int = 0):
 	"""List items in trash."""
+	# Row-level access: a user sees only what they deleted (else every user's
+	# trashed files/folders were listed). Administrator sees all.
+	filters = {}
+	if frappe.session.user != "Administrator":
+		filters["deleted_by"] = frappe.session.user
 	items = frappe.get_all(
 		"Drive Trash",
+		filters=filters,
 		fields=["name", "original_doctype", "original_name", "deleted_by", "deleted_on",
 				"original_folder", "expires_on"],
 		order_by="deleted_on desc",

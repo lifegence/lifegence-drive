@@ -2,7 +2,12 @@ import frappe
 from frappe import _
 
 from lifegence_drive.drive.services.activity_service import log_activity
-from lifegence_drive.drive.services.permission_service import check_manage_permission
+from lifegence_drive.drive.services.permission_service import (
+	check_manage_permission,
+	check_view_permission,
+	get_accessible_file_names,
+	get_accessible_folder_names,
+)
 
 
 @frappe.whitelist()
@@ -84,10 +89,13 @@ def get_folders(
 	else:
 		filters["parent_folder"] = ("in", ["", None])
 
-	# Exclude trashed folders
-	trashed = frappe.get_all("Drive Trash", filters={"original_doctype": "Drive Folder"}, pluck="original_name")
-	if trashed:
-		filters["name"] = ("not in", trashed)
+	# Row-level access: restrict to folders the user owns or was shared, minus
+	# trashed ones. Without this, get_all exposed every user's folders.
+	trashed = set(
+		frappe.get_all("Drive Trash", filters={"original_doctype": "Drive Folder"}, pluck="original_name")
+	)
+	accessible = get_accessible_folder_names()
+	filters["name"] = ("in", list(accessible - trashed))
 
 	allowed_orders = {"folder_name asc", "folder_name desc", "modified desc", "modified asc", "creation desc"}
 	if order_by not in allowed_orders:
@@ -137,7 +145,17 @@ def get_folders(
 
 @frappe.whitelist()
 def get_breadcrumb(folder: str):
-	"""Return the breadcrumb path from root to the given folder."""
+	"""Return the breadcrumb path from root to the given folder.
+
+	Returns empty unless the user can view the target folder, so folder
+	names/hierarchy can't be enumerated by guessing ids.
+	"""
+	if not folder:
+		return []
+	accessible = get_accessible_folder_names()
+	if folder not in accessible:
+		return []
+
 	breadcrumb = []
 	current = folder
 
@@ -158,15 +176,19 @@ def get_breadcrumb(folder: str):
 @frappe.whitelist()
 def get_tree_children(doctype=None, parent="", include_disabled=False, **filters):
 	"""Return folder children + files for the Tree View."""
-	# Get child folders (standard tree behavior)
+	# Get child folders (standard tree behavior), then drop any the user
+	# can't access — _get_children is unfiltered and would expose all folders.
 	from frappe.desk.treeview import _get_children
 	children = _get_children("Drive Folder", parent, include_disabled=include_disabled)
+	accessible_folders = get_accessible_folder_names()
+	children = [c for c in children if c.get("value") in accessible_folders]
 
-	# Get files in this folder
+	# Get files in this folder, restricted to ones the user can access.
 	folder_filter = parent if parent else ["in", ["", None]]
+	accessible_files = get_accessible_file_names()
 	files = frappe.get_all(
 		"Drive File",
-		filters={"folder": folder_filter},
+		filters={"folder": folder_filter, "name": ["in", list(accessible_files)]},
 		fields=["name", "file_name", "file_size", "extension", "mime_type"],
 		order_by="file_name asc",
 		limit_page_length=200,
@@ -188,6 +210,11 @@ def get_tree_children(doctype=None, parent="", include_disabled=False, **filters
 def get_contents(folder: str | None = None, order_by: str = "modified desc", limit: int = 50, start: int = 0):
 	"""List both folders and files in a given folder, folders first."""
 	from lifegence_drive.drive.api.file import get_files
+
+	# Reject browsing into a folder the user can't view (defense in depth;
+	# the listings below are already row-filtered).
+	if folder:
+		check_view_permission("Drive Folder", folder)
 
 	folders = get_folders(parent_folder=folder, order_by="folder_name asc", with_counts=1)
 	files = get_files(folder=folder, order_by=order_by, limit=limit, start=start)
