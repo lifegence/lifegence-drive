@@ -1,6 +1,9 @@
 import frappe
 
-from lifegence_drive.drive.services.permission_service import get_accessible_file_names
+from lifegence_drive.drive.services.permission_service import (
+	get_accessible_file_names,
+	get_accessible_folder_names,
+)
 
 
 @frappe.whitelist()
@@ -139,6 +142,10 @@ def search(
 			order_by="modified desc",
 			limit=limit,
 		)
+		# Row-level access: drop folders the user neither owns nor was shared.
+		accessible_folders = get_accessible_folder_names()
+		folders = [f for f in folders if f.name in accessible_folders]
+
 		# Also enrich each folder with its parent's name for breadcrumb display
 		parent_ids = {f.parent_folder for f in folders if f.parent_folder}
 		parent_name_map: dict[str, str] = {}

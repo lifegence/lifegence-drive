@@ -2,7 +2,10 @@ import frappe
 from frappe import _
 
 from lifegence_drive.drive.services.activity_service import log_activity
-from lifegence_drive.drive.services.permission_service import check_manage_permission
+from lifegence_drive.drive.services.permission_service import (
+	check_manage_permission,
+	get_accessible_folder_names,
+)
 
 
 @frappe.whitelist()
@@ -84,10 +87,13 @@ def get_folders(
 	else:
 		filters["parent_folder"] = ("in", ["", None])
 
-	# Exclude trashed folders
-	trashed = frappe.get_all("Drive Trash", filters={"original_doctype": "Drive Folder"}, pluck="original_name")
-	if trashed:
-		filters["name"] = ("not in", trashed)
+	# Row-level access: restrict to folders the user owns or was shared, minus
+	# trashed ones. Without this, get_all exposed every user's folders.
+	trashed = set(
+		frappe.get_all("Drive Trash", filters={"original_doctype": "Drive Folder"}, pluck="original_name")
+	)
+	accessible = get_accessible_folder_names()
+	filters["name"] = ("in", list(accessible - trashed))
 
 	allowed_orders = {"folder_name asc", "folder_name desc", "modified desc", "modified asc", "creation desc"}
 	if order_by not in allowed_orders:
