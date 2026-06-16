@@ -240,6 +240,9 @@ def get_files(folder: str | None = None, order_by: str = "modified desc", limit:
 		filters["folder"] = folder
 	else:
 		filters["folder"] = ("in", ["", None])
+		# "My Files" root = the user's OWN top-level files only (shared files
+		# live in the Shared view; also scopes Administrator to their own).
+		filters["uploaded_by"] = frappe.session.user
 
 	# Exclude trashed files
 	trashed = frappe.get_all("Drive Trash", filters={"original_doctype": "Drive File"}, pluck="original_name")
