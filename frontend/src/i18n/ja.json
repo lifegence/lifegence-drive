@@ -47,5 +47,7 @@
   "action.deletePermanently": "完全削除",
   "action.newFolder": "新規フォルダ",
   "action.copyPath": "パスをコピー",
-  "error.createFolder": "フォルダ作成に失敗しました"
+  "error.createFolder": "フォルダ作成に失敗しました",
+  "assistant.title": "AIアシスタント",
+  "assistant.close": "閉じる"
 }

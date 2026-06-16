@@ -47,5 +47,7 @@
   "action.deletePermanently": "Delete permanently",
   "action.newFolder": "New Folder",
   "action.copyPath": "Copy Path",
-  "error.createFolder": "Failed to create folder"
+  "error.createFolder": "Failed to create folder",
+  "assistant.title": "AI Assistant",
+  "assistant.close": "Close"
 }
