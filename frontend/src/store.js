@@ -50,5 +50,24 @@ export const useUiStore = defineStore("ui", () => {
   function closeSidebar() {
     sidebarOpen.value = false
   }
-  return { sidebarOpen, toggleSidebar, openSidebar, closeSidebar }
+
+  // AI assistant drawer (embeds /app/assistant via iframe)
+  const assistantOpen = ref(localStorage.getItem("drive:assistant") === "1")
+  watch(assistantOpen, (v) => localStorage.setItem("drive:assistant", v ? "1" : "0"))
+  function toggleAssistant() {
+    assistantOpen.value = !assistantOpen.value
+  }
+  function closeAssistant() {
+    assistantOpen.value = false
+  }
+
+  return {
+    sidebarOpen,
+    toggleSidebar,
+    openSidebar,
+    closeSidebar,
+    assistantOpen,
+    toggleAssistant,
+    closeAssistant,
+  }
 })
