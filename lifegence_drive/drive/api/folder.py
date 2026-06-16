@@ -88,6 +88,10 @@ def get_folders(
 		filters["parent_folder"] = parent_folder
 	else:
 		filters["parent_folder"] = ("in", ["", None])
+		# "My Files" root = the user's OWN top-level folders only. Items shared
+		# with the user live in the dedicated Shared view, and this also keeps
+		# Administrator's root scoped to their own (not every user's).
+		filters["created_by"] = frappe.session.user
 
 	# Row-level access: restrict to folders the user owns or was shared, minus
 	# trashed ones. Without this, get_all exposed every user's folders.
